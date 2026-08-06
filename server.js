@@ -1,3 +1,5 @@
+process.env.TZ = 'Asia/Jakarta';
+
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import path from 'path';
@@ -18,15 +20,20 @@ app.use(cookieParser('casanawasena-secret-key-2026'));
 app.use(express.static(path.resolve('public')));
 app.use('/views', express.static(path.resolve('views')));
 
-// Helper to format timestamps
+// Helper to format timestamps in WIB (Waktu Indonesia Barat - UTC+7)
 function getFormattedDateTime() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const d = new Date();
+  // Get UTC time and add 7 hours for WIB
+  const utcMs = d.getTime() + (d.getTimezoneOffset() * 60000);
+  const wibDate = new Date(utcMs + (3600000 * 7));
+
+  const year = wibDate.getFullYear();
+  const month = String(wibDate.getMonth() + 1).padStart(2, '0');
+  const day = String(wibDate.getDate()).padStart(2, '0');
+  const hours = String(wibDate.getHours()).padStart(2, '0');
+  const minutes = String(wibDate.getMinutes()).padStart(2, '0');
+  const seconds = String(wibDate.getSeconds()).padStart(2, '0');
+
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
@@ -97,11 +104,12 @@ app.post('/api/register', async (req, res) => {
     }
 
     const security_token = generateRandomCode(8);
+    const createdAt = getFormattedDateTime();
 
     await dbAsync.run(
       `INSERT INTO participants 
-       (ticket_id, security_token, nama_lengkap, prodi, fakultas, unit_rumah, unit_kamar, no_telpon, status_kehadiran)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Tidak Hadir')`,
+       (ticket_id, security_token, nama_lengkap, prodi, fakultas, unit_rumah, unit_kamar, no_telpon, status_kehadiran, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Tidak Hadir', ?)`,
       [
         ticket_id,
         security_token,
@@ -110,7 +118,8 @@ app.post('/api/register', async (req, res) => {
         fakultas ? fakultas.trim() : '',
         unit_rumah ? unit_rumah.trim() : '',
         unit_kamar ? unit_kamar.trim() : '',
-        no_telpon ? no_telpon.trim() : ''
+        no_telpon ? no_telpon.trim() : '',
+        createdAt
       ]
     );
 

@@ -1,3 +1,5 @@
+process.env.TZ = 'Asia/Jakarta';
+
 import sqlite3 from 'sqlite3';
 import path from 'path';
 import fs from 'fs';
@@ -5,6 +7,21 @@ import bcrypt from 'bcryptjs';
 
 let db = null;
 let dbInitPromise = null;
+
+function getWibTimeString(offsetMs = 0) {
+  const d = new Date(Date.now() + offsetMs);
+  const utcMs = d.getTime() + (d.getTimezoneOffset() * 60000);
+  const wibDate = new Date(utcMs + (3600000 * 7));
+
+  const year = wibDate.getFullYear();
+  const month = String(wibDate.getMonth() + 1).padStart(2, '0');
+  const day = String(wibDate.getDate()).padStart(2, '0');
+  const hours = String(wibDate.getHours()).padStart(2, '0');
+  const minutes = String(wibDate.getMinutes()).padStart(2, '0');
+  const seconds = String(wibDate.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
 
 function getDbPath() {
   if (process.env.VERCEL) {
@@ -131,7 +148,7 @@ export async function initDb() {
           unit_kamar: 'A-12',
           no_telpon: '081234567890',
           status_kehadiran: 'Hadir',
-          waktu_checkin: new Date(Date.now() - 1000 * 60 * 45).toISOString().replace('T', ' ').substring(0, 19),
+          waktu_checkin: getWibTimeString(-1000 * 60 * 45),
           petugas_checkin: 'Admin CSN'
         },
         {
@@ -144,7 +161,7 @@ export async function initDb() {
           unit_kamar: 'B-05',
           no_telpon: '082198765432',
           status_kehadiran: 'Hadir',
-          waktu_checkin: new Date(Date.now() - 1000 * 60 * 15).toISOString().replace('T', ' ').substring(0, 19),
+          waktu_checkin: getWibTimeString(-1000 * 60 * 15),
           petugas_checkin: 'Admin CSN'
         },
         {
