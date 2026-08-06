@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Tiket Presensi - CASANAWASENA</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap Icons CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- QR Code JS CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- html2canvas CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-[#0F172A] text-slate-100 min-h-screen flex flex-col justify-between selection:bg-[#C8A45D] selection:text-slate-900">
+
+  <!-- TOP NAVBAR -->
+  <header class="border-b border-[#C8A45D]/20 bg-[#0F172A]/90 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#C8A45D] to-[#9A7731] p-0.5 shadow-lg shadow-[#C8A45D]/20">
+          <div class="w-full h-full bg-[#0F172A] rounded-[10px] flex items-center justify-center">
+            <i class="bi bi-building-fill text-[#C8A45D] text-base sm:text-lg"></i>
+          </div>
+        </div>
+        <div>
+          <span class="text-base sm:text-lg font-extrabold font-['Poppins'] gold-text block">CASANAWASENA</span>
+          <span class="block text-[9px] sm:text-[10px] font-medium text-slate-400 tracking-widest uppercase">E-Ticket Pass</span>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="/" class="text-xs sm:text-sm font-semibold text-slate-300 hover:text-[#C8A45D] bg-slate-900 border border-slate-700 hover:border-[#C8A45D]/40 px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+          <i class="bi bi-house-door-fill text-[#C8A45D]"></i>
+          <span>Beranda</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow py-12 px-4 sm:px-6 relative overflow-hidden">
+    
+    <!-- Background glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#C8A45D]/10 rounded-full blur-[140px] pointer-events-none"></div>
+
+    <div class="max-w-2xl mx-auto relative z-10">
+      
+      <!-- Top Alert Header -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-[#C8A45D]/10 text-[#C8A45D] rounded-full flex items-center justify-center mx-auto mb-3 text-3xl border border-[#C8A45D]/30 shadow-xl">
+          <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold font-['Poppins'] tracking-tight mb-2">
+          E-TIKET DIGITAL ANDA
+        </h1>
+        <p class="text-slate-400 text-sm">
+          Simpan E-Tiket ini dan tunjukkan QR Code kepada petugas di pintu masuk lokasi acara.
+        </p>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-box" class="glass-card p-12 text-center my-8">
+        <i class="bi bi-arrow-repeat text-4xl text-[#C8A45D] animate-spin block mb-3"></i>
+        <p class="text-sm text-slate-300 font-medium">Memuat E-Tiket Resmi CASANAWASENA...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-box" class="hidden glass-card p-10 text-center border-rose-500/40 my-8">
+        <div class="w-14 h-14 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl border border-rose-500/30">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <h3 class="text-lg font-bold text-rose-400 mb-1">Tiket Tidak Ditemukan</h3>
+        <p id="error-msg" class="text-slate-400 text-sm mb-6">ID Tiket yang Anda masukkan tidak terdaftar dalam database kami.</p>
+        <a href="/" class="btn-gold inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-slate-950 font-bold text-sm">
+          <i class="bi bi-arrow-left"></i> Kembali ke Pendaftaran
+        </a>
+      </div>
+
+      <!-- E-TICKET CARD (TARGET FOR HTML2CANVAS DOWNLOAD) -->
+      <div id="ticket-card-wrapper" class="hidden">
+        
+        <div id="ticket-card" class="ticket-container rounded-2xl p-6 sm:p-8 shadow-2xl relative border-2 border-[#C8A45D] bg-[#0F172A]">
+          
+          <!-- Notches for ticket effect -->
+          <div class="ticket-notch-left"></div>
+          <div class="ticket-notch-right"></div>
+
+          <!-- Ticket Header -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#C8A45D]/30 pb-6 mb-6 gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <i class="bi bi-building-fill text-[#C8A45D] text-lg"></i>
+                <span class="text-xl font-black font-['Poppins'] tracking-wider gold-text">CASANAWASENA</span>
+              </div>
+              <p class="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">OFFICIAL EVENT VIP ACCESS PASS</p>
+            </div>
+
+            <div class="text-left sm:text-right">
+              <span id="ticket-status-badge" class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider inline-block">
+                --
+              </span>
+              <p class="text-[10px] text-slate-400 mt-1 font-mono">STATUS KEHADIRAN</p>
+            </div>
+          </div>
+
+          <!-- Ticket Body Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            
+            <!-- Details Column -->
+            <div class="md:col-span-2 space-y-4">
+              
+              <div>
+                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">NAMA PESERTA</span>
+                <span id="ticket-nama" class="text-lg font-bold text-slate-100 font-['Poppins'] block">--</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">PROGRAM STUDI</span>
+                  <span id="ticket-prodi" class="text-xs font-semibold text-slate-200 block">--</span>
+                </div>
+                <div>
+                  <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">FAKULTAS / DIVISI</span>
+                  <span id="ticket-fakultas" class="text-xs font-semibold text-slate-200 block">--</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">UNIT PROPERTI</span>
+                  <span id="ticket-unit-rumah" class="text-xs font-semibold text-[#C8A45D] block">--</span>
+                </div>
+                <div>
+                  <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">NO. KAMAR / UNIT</span>
+                  <span id="ticket-unit-kamar" class="text-xs font-semibold text-[#C8A45D] block">--</span>
+                </div>
+              </div>
+
+              <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                <div>
+                  <span class="text-[10px] text-slate-400 block">NO. TELEPON</span>
+                  <span id="ticket-telpon" class="font-mono text-slate-300">--</span>
+                </div>
+                <div>
+                  <span class="text-[10px] text-slate-400 block">WAKTU DAFTAR</span>
+                  <span id="ticket-created" class="font-mono text-slate-400">--</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- QR Code Column -->
+            <div class="flex flex-col items-center justify-center p-4 bg-slate-900/90 border border-[#C8A45D]/40 rounded-xl text-center">
+              <div id="qrcode-box" class="bg-white p-2.5 rounded-lg shadow-inner mb-3"></div>
+              
+              <span id="ticket-id-text" class="text-xs font-mono font-bold text-[#C8A45D] tracking-wider block">
+                CSN-2026-XXXX
+              </span>
+              <span class="text-[9px] text-slate-500 block uppercase font-mono mt-0.5">TICKET ID</span>
+            </div>
+
+          </div>
+
+          <!-- Ticket Footer Info -->
+          <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-500">
+            <span>CASANAWASENA Event Management 2026</span>
+            <span id="checkin-time-info" class="font-mono text-slate-400"></span>
+          </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <button onclick="downloadTicketPNG()" class="btn-gold py-3.5 px-6 rounded-xl font-bold text-slate-950 text-sm flex items-center justify-center gap-2 shadow-xl cursor-pointer">
+            <i class="bi bi-download text-base"></i>
+            <span>Download E-Tiket (PNG)</span>
+          </button>
+
+          <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-3.5 px-6 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+            <i class="bi bi-printer text-base"></i>
+            <span>Cetak Halaman</span>
+          </button>
+
+          <a href="/" class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 py-3.5 px-6 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition">
+            <i class="bi bi-[#C8A45D] bi-plus-circle"></i>
+            <span>Daftar Lagi</span>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500 bg-[#0F172A]">
+    <div class="max-w-7xl mx-auto px-4">
+      <p class="font-semibold text-slate-400">© 2026 CASANAWASENA Property Developer & Management.</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+    let currentTicketData = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const ticketId = urlParams.get('ticket_id');
+
+      if (!ticketId) {
+        showError('URL tidak memiliki parameter Ticket ID.');
+        return;
+      }
+
+      fetchTicketDetail(ticketId);
+    });
+
+    async function fetchTicketDetail(ticketId) {
+      try {
+        const res = await fetch(`/api/ticket?ticket_id=${encodeURIComponent(ticketId)}`);
+        const data = await res.json();
+
+        if (data.success && data.participant) {
+          currentTicketData = data.participant;
+          renderTicket(data.participant);
+        } else {
+          showError(data.message || 'Tiket tidak ditemukan.');
+        }
+      } catch (err) {
+        showError('Gagal menghubungkan ke server: ' + err.message);
+      }
+    }
+
+    function renderTicket(p) {
+      document.getElementById('loading-box').classList.add('hidden');
+      document.getElementById('ticket-card-wrapper').classList.remove('hidden');
+
+      document.getElementById('ticket-nama').textContent = p.nama_lengkap || '-';
+      document.getElementById('ticket-prodi').textContent = p.prodi || '-';
+      document.getElementById('ticket-fakultas').textContent = p.fakultas || '-';
+      document.getElementById('ticket-unit-rumah').textContent = p.unit_rumah || '-';
+      document.getElementById('ticket-unit-kamar').textContent = p.unit_kamar || '-';
+      document.getElementById('ticket-telpon').textContent = p.no_telpon || '-';
+      document.getElementById('ticket-created').textContent = (p.created_at || '').substring(0, 10);
+      document.getElementById('ticket-id-text').textContent = p.ticket_id;
+
+      // Status Badge
+      const statusBadge = document.getElementById('ticket-status-badge');
+      if (p.status_kehadiran === 'Hadir') {
+        statusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider inline-block bg-emerald-500/20 border border-emerald-500/40 text-emerald-400';
+        statusBadge.textContent = 'HADIR';
+        if (p.waktu_checkin) {
+          document.getElementById('checkin-time-info').textContent = 'Check-in: ' + p.waktu_checkin;
+        }
+      } else {
+        statusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider inline-block bg-amber-500/20 border border-amber-500/40 text-amber-400';
+        statusBadge.textContent = 'BELUM HADIR';
+        document.getElementById('checkin-time-info').textContent = 'Status: Registrasi Terverifikasi';
+      }
+
+      // Generate QR Code payload: ticket_id|security_token
+      const qrPayload = `${p.ticket_id}|${p.security_token}`;
+      const qrContainer = document.getElementById('qrcode-box');
+      qrContainer.innerHTML = '';
+
+      new QRCode(qrContainer, {
+        text: qrPayload,
+        width: 140,
+        height: 140,
+        colorDark: "#0F172A",
+        colorLight: "#FFFFFF",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    function showError(msg) {
+      document.getElementById('loading-box').classList.add('hidden');
+      document.getElementById('error-box').classList.remove('hidden');
+      document.getElementById('error-msg').textContent = msg;
+    }
+
+    // Download PNG function using html2canvas
+    function downloadTicketPNG() {
+      const ticketElement = document.getElementById('ticket-card');
+      if (!ticketElement) return;
+
+      html2canvas(ticketElement, {
+        backgroundColor: '#0F172A',
+        scale: 2, // High resolution
+        useCORS: true
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `E-Ticket_${currentTicketData ? currentTicketData.ticket_id : 'CASANAWASENA'}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }).catch(err => {
+        alert('Gagal mengunduh tiket: ' + err.message);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin - CASANAWASENA</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap Icons CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-[#0F172A] text-slate-100 min-h-screen flex flex-col selection:bg-[#C8A45D] selection:text-slate-900">
+
+  <!-- ADMIN NAVBAR -->
+  <header class="border-b border-[#C8A45D]/20 bg-[#0F172A]/90 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="/views/admin/dashboard.html" class="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#C8A45D] to-[#9A7731] p-0.5 shadow-lg shadow-[#C8A45D]/20">
+          <div class="w-full h-full bg-[#0F172A] rounded-[10px] flex items-center justify-center">
+            <i class="bi bi-speedometer2 text-[#C8A45D] text-base sm:text-lg"></i>
+          </div>
+        </div>
+        <div>
+          <span class="text-base sm:text-lg font-extrabold font-['Poppins'] gold-text block">CASANAWASENA</span>
+          <span class="block text-[9px] sm:text-[10px] font-medium text-slate-400 tracking-widest uppercase">ADMIN DASHBOARD</span>
+        </div>
+      </a>
+
+      <!-- Admin Nav Links -->
+      <nav class="hidden md:flex items-center gap-2">
+        <a href="/views/admin/dashboard.html" class="px-4 py-2 rounded-lg text-sm font-semibold bg-[#C8A45D]/15 text-[#C8A45D] border border-[#C8A45D]/30 flex items-center gap-2">
+          <i class="bi bi-grid-fill"></i> Dashboard
+        </a>
+        <a href="/views/admin/scanner.html" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-[#C8A45D] hover:bg-slate-800/60 transition flex items-center gap-2">
+          <i class="bi bi-qr-code-scan"></i> QR Scanner
+        </a>
+        <a href="/views/admin/rekap.html" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-[#C8A45D] hover:bg-slate-800/60 transition flex items-center gap-2">
+          <i class="bi bi-table"></i> Rekap Data
+        </a>
+      </nav>
+
+      <!-- Logout Button -->
+      <div class="hidden md:flex items-center">
+        <button onclick="handleLogout()" class="text-xs sm:text-sm font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 px-3.5 py-2 rounded-lg border border-rose-500/30 transition flex items-center gap-1.5 cursor-pointer">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Keluar</span>
+        </button>
+      </div>
+
+      <!-- Mobile Hamburger Button -->
+      <div class="md:hidden flex items-center gap-2">
+        <button onclick="toggleAdminMenu()" id="admin-menu-btn" class="p-2 text-slate-300 hover:text-[#C8A45D] focus:outline-none text-2xl rounded-lg border border-slate-700 bg-slate-900/60" aria-label="Menu">
+          <i class="bi bi-list" id="admin-menu-icon"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Dropdown Menu -->
+    <div id="admin-menu" class="hidden md:hidden border-t border-slate-800 bg-[#0F172A] px-4 py-3 space-y-2">
+      <a href="/views/admin/dashboard.html" class="block text-sm font-semibold text-[#C8A45D] bg-[#C8A45D]/10 border border-[#C8A45D]/30 p-2.5 rounded-lg flex items-center gap-2">
+        <i class="bi bi-grid-fill"></i> Dashboard
+      </a>
+      <a href="/views/admin/scanner.html" class="block text-sm font-semibold text-slate-200 hover:text-[#C8A45D] p-2.5 rounded-lg hover:bg-slate-800/60 transition flex items-center gap-2">
+        <i class="bi bi-qr-code-scan"></i> QR Scanner
+      </a>
+      <a href="/views/admin/rekap.html" class="block text-sm font-semibold text-slate-200 hover:text-[#C8A45D] p-2.5 rounded-lg hover:bg-slate-800/60 transition flex items-center gap-2">
+        <i class="bi bi-table"></i> Rekap Data
+      </a>
+      <button onclick="handleLogout()" class="w-full text-left text-sm font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/30 p-2.5 rounded-lg transition flex items-center gap-2">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Keluar / Logout</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MOBILE NAVIGATION BAR -->
+  <div class="md:hidden bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex justify-around text-xs font-semibold">
+    <a href="/views/admin/dashboard.html" class="text-[#C8A45D] flex items-center gap-1">
+      <i class="bi bi-grid-fill"></i> Dashboard
+    </a>
+    <a href="/views/admin/scanner.html" class="text-slate-400 hover:text-[#C8A45D] flex items-center gap-1">
+      <i class="bi bi-qr-code-scan"></i> QR Scanner
+    </a>
+    <a href="/views/admin/rekap.html" class="text-slate-400 hover:text-[#C8A45D] flex items-center gap-1">
+      <i class="bi bi-table"></i> Rekap Data
+    </a>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
+    
+    <!-- Welcome Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold font-['Poppins']">
+          Ikhtisar Statik & Presensi Event
+        </h1>
+        <p class="text-slate-400 text-sm mt-1">
+          Pantau kehadiran peserta secara terpusat dan real-time.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="loadDashboardStats()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition flex items-center gap-2 cursor-pointer">
+          <i class="bi bi-arrow-clockwise text-sm"></i> Refresh Data
+        </button>
+        <a href="/views/admin/scanner.html" class="btn-gold px-4 py-2 rounded-xl text-slate-950 text-xs font-bold flex items-center gap-2 shadow-lg">
+          <i class="bi bi-qr-code-scan"></i> Buka Scanner Live
+        </a>
+      </div>
+    </div>
+
+    <!-- STATS CARDS GRID -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      
+      <!-- Card 1: Total -->
+      <div class="glass-card p-5 relative overflow-hidden border border-slate-700/60">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Peserta</span>
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl">
+            <i class="bi bi-people-fill"></i>
+          </div>
+        </div>
+        <div class="text-3xl font-black font-['Poppins'] text-slate-100" id="stat-total">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Peserta terdaftar dalam sistem</p>
+      </div>
+
+      <!-- Card 2: Hadir -->
+      <div class="glass-card p-5 relative overflow-hidden border border-emerald-500/30">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Sudah Check-In</span>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+        </div>
+        <div class="text-3xl font-black font-['Poppins'] text-emerald-400" id="stat-hadir">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Peserta telah hadir di lokasi</p>
+      </div>
+
+      <!-- Card 3: Belum Hadir -->
+      <div class="glass-card p-5 relative overflow-hidden border border-amber-500/30">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Belum Hadir</span>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl">
+            <i class="bi bi-clock-history"></i>
+          </div>
+        </div>
+        <div class="text-3xl font-black font-['Poppins'] text-amber-400" id="stat-tidak-hadir">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Menunggu kedatangan peserta</p>
+      </div>
+
+      <!-- Card 4: Persentase -->
+      <div class="glass-card p-5 relative overflow-hidden border border-[#C8A45D]/40">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#C8A45D]">Tingkat Kehadiran</span>
+          <div class="w-10 h-10 rounded-xl bg-[#C8A45D]/10 text-[#C8A45D] flex items-center justify-center text-xl">
+            <i class="bi bi-pie-chart-fill"></i>
+          </div>
+        </div>
+        <div class="text-3xl font-black font-['Poppins'] gold-text" id="stat-persentase">0%</div>
+        <p class="text-[11px] text-slate-400 mt-1">Rasio kehadiran keseluruhan</p>
+      </div>
+
+    </div>
+
+    <!-- CHARTS SECTION -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Doughnut Chart: Ratio -->
+      <div class="glass-card p-6 flex flex-col justify-between">
+        <div>
+          <h3 class="text-base font-bold font-['Poppins'] text-slate-100 flex items-center gap-2 mb-1">
+            <i class="bi bi-pie-chart text-[#C8A45D]"></i> Proporsi Kehadiran
+          </h3>
+          <p class="text-xs text-slate-400 mb-4">Perbandingan peserta hadir vs belum hadir.</p>
+        </div>
+        
+        <div class="relative w-full h-64 flex items-center justify-center">
+          <canvas id="attendanceChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Bar Chart: Prodi Breakdown -->
+      <div class="glass-card p-6 lg:col-span-2 flex flex-col justify-between">
+        <div>
+          <h3 class="text-base font-bold font-['Poppins'] text-slate-100 flex items-center gap-2 mb-1">
+            <i class="bi bi-[#C8A45D] bi-bar-chart-line text-[#C8A45D]"></i> Sebaran Program Studi / Instansi
+          </h3>
+          <p class="text-xs text-slate-400 mb-4">Jumlah pendaftar berdasarkan latar belakang prodi/unit.</p>
+        </div>
+
+        <div class="relative w-full h-64">
+          <canvas id="prodiChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RECENT CHECK-INS TABLE -->
+    <div class="glass-card p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 class="text-lg font-bold font-['Poppins'] text-slate-100 flex items-center gap-2">
+            <i class="bi bi-lightning-charge-fill text-[#C8A45D]"></i> Log Check-In Terkini
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">Daftar peserta yang baru saja melakukan scan QR presensi.</p>
+        </div>
+        <a href="/views/admin/rekap.html" class="text-xs font-semibold text-[#C8A45D] hover:underline flex items-center gap-1">
+          <span>Lihat Semua Rekap</span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-900/80 text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-4">Ticket ID</th>
+              <th class="py-3 px-4">Nama Peserta</th>
+              <th class="py-3 px-4">Prodi / Instansi</th>
+              <th class="py-3 px-4">Unit Rumah</th>
+              <th class="py-3 px-4">Waktu Check-In</th>
+              <th class="py-3 px-4">Status</th>
+            </tr>
+          </thead>
+          <tbody id="recent-checkins-body" class="divide-y divide-slate-800/60 font-medium text-xs sm:text-sm">
+            <tr>
+              <td colspan="6" class="text-center py-6 text-slate-500">Memuat data log terkini...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500 bg-[#0F172A] mt-auto">
+    <div class="max-w-7xl mx-auto px-4">
+      <p class="font-semibold text-slate-400">© 2026 CASANAWASENA Administrator Panel.</p>
+    </div>
+  </footer>
+
+  <script>
+    let attendanceChartInstance = null;
+    let prodiChartInstance = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuthAndLoad();
+    });
+
+    async function checkAuthAndLoad() {
+      try {
+        const res = await fetch('/api/admin/me');
+        if (!res.ok) {
+          window.location.href = '/views/admin/login.html';
+          return;
+        }
+        loadDashboardStats();
+      } catch (e) {
+        window.location.href = '/views/admin/login.html';
+      }
+    }
+
+    async function loadDashboardStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        const data = await res.json();
+
+        if (data.success && data.stats) {
+          const s = data.stats;
+          document.getElementById('stat-total').textContent = s.total;
+          document.getElementById('stat-hadir').textContent = s.hadir;
+          document.getElementById('stat-tidak-hadir').textContent = s.tidak_hadir;
+          document.getElementById('stat-persentase').textContent = s.persentase + '%';
+
+          renderCharts(s);
+          renderRecentCheckins(s.recent_checkins);
+        }
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      }
+    }
+
+    function renderRecentCheckins(list) {
+      const tbody = document.getElementById('recent-checkins-body');
+      if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">Belum ada peserta yang melakukan check-in.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(item => `
+        <tr class="hover:bg-slate-800/40 transition">
+          <td class="py-3.5 px-4 font-mono text-[#C8A45D] font-bold">${item.ticket_id}</td>
+          <td class="py-3.5 px-4 font-bold text-slate-100">${item.nama_lengkap}</td>
+          <td class="py-3.5 px-4 text-slate-300">${item.prodi || '-'}</td>
+          <td class="py-3.5 px-4 text-slate-300">${item.unit_rumah || '-'}</td>
+          <td class="py-3.5 px-4 font-mono text-slate-400 text-xs">${item.waktu_checkin || '-'}</td>
+          <td class="py-3.5 px-4">
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              HADIR
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderCharts(stats) {
+      // 1. Doughnut Chart
+      const ctx1 = document.getElementById('attendanceChart').getContext('2d');
+      if (attendanceChartInstance) attendanceChartInstance.destroy();
+
+      attendanceChartInstance = new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+          labels: ['Hadir', 'Belum Hadir'],
+          datasets: [{
+            data: [stats.hadir, stats.tidak_hadir],
+            backgroundColor: ['#10B981', '#F59E0B'],
+            borderColor: '#0F172A',
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#CBD5E1', font: { family: 'Inter', size: 12 } }
+            }
+          }
+        }
+      });
+
+      // 2. Bar Chart: Prodi
+      const ctx2 = document.getElementById('prodiChart').getContext('2d');
+      if (prodiChartInstance) prodiChartInstance.destroy();
+
+      const labels = (stats.prodi_breakdown || []).map(p => p.prodi || 'Tidak Diisi').slice(0, 7);
+      const dataTotal = (stats.prodi_breakdown || []).map(p => p.count).slice(0, 7);
+      const dataHadir = (stats.prodi_breakdown || []).map(p => p.hadir_count).slice(0, 7);
+
+      prodiChartInstance = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Total Terdaftar',
+              data: dataTotal,
+              backgroundColor: 'rgba(200, 164, 93, 0.4)',
+              borderColor: '#C8A45D',
+              borderWidth: 1.5,
+              borderRadius: 6
+            },
+            {
+              label: 'Sudah Check-In',
+              data: dataHadir,
+              backgroundColor: 'rgba(16, 185, 129, 0.7)',
+              borderColor: '#10B981',
+              borderWidth: 1.5,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { color: '#94A3B8' }, grid: { display: false } },
+            y: { ticks: { color: '#94A3B8', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: '#CBD5E1', font: { family: 'Inter', size: 12 } }
+            }
+          }
+        }
+      });
+    }
+
+    async function handleLogout() {
+      if (confirm('Apakah Anda yakin ingin keluar dari portal admin?')) {
+        await fetch('/api/admin/logout', { method: 'POST' });
+        window.location.href = '/views/admin/login.html';
+      }
+    }
+
+    function toggleAdminMenu() {
+      const menu = document.getElementById('admin-menu');
+      const icon = document.getElementById('admin-menu-icon');
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        icon.className = 'bi bi-x-lg';
+      } else {
+        menu.classList.add('hidden');
+        icon.className = 'bi bi-list';
+      }
+    }
+  </script>
+</body>
+</html>

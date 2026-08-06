@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - CASANAWASENA</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap Icons CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-[#0F172A] text-slate-100 min-h-screen flex items-center justify-center p-4 selection:bg-[#C8A45D] selection:text-slate-900">
+
+  <div class="max-w-md w-full relative z-10">
+    
+    <!-- Background glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-[#C8A45D]/15 rounded-full blur-[100px] pointer-events-none"></div>
+
+    <!-- Login Card -->
+    <div class="glass-card p-8 sm:p-10 shadow-2xl relative border border-[#C8A45D]/30">
+      
+      <!-- Brand Logo Header -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C8A45D] to-[#9A7731] p-0.5 shadow-xl shadow-[#C8A45D]/20 mx-auto mb-4">
+          <div class="w-full h-full bg-[#0F172A] rounded-[14px] flex items-center justify-center">
+            <i class="bi bi-shield-lock-fill text-[#C8A45D] text-2xl"></i>
+          </div>
+        </div>
+        
+        <h1 class="text-2xl font-extrabold font-['Poppins'] tracking-wider gold-text">CASANAWASENA</h1>
+        <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold">PORTAL ADMINISTRATOR PRESENSI</p>
+      </div>
+
+      <!-- Login Form -->
+      <form onsubmit="handleLogin(event)" class="space-y-5">
+        
+        <div id="login-alert" class="hidden p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold"></div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Username</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="bi bi-person-fill"></i>
+            </span>
+            <input type="text" id="username" required placeholder="daus" 
+                   class="w-full bg-slate-900 border border-slate-700 focus:border-[#C8A45D] focus:ring-1 focus:ring-[#C8A45D] rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 text-sm outline-none transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Password</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="bi bi-key-fill"></i>
+            </span>
+            <input type="password" id="password" required placeholder="••••••••" 
+                   class="w-full bg-slate-900 border border-slate-700 focus:border-[#C8A45D] focus:ring-1 focus:ring-[#C8A45D] rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 text-sm outline-none transition">
+          </div>
+        </div>
+
+        <button type="submit" id="login-btn" class="w-full btn-gold py-3.5 rounded-xl font-bold text-slate-950 text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-[1.01] transition cursor-pointer">
+          <span>MASUK PORTAL ADMIN</span>
+          <i class="bi bi-box-arrow-in-right text-base"></i>
+        </button>
+
+      </form>
+
+      <!-- Default Credential Notice -->
+      <div class="mt-8 pt-6 border-t border-slate-800 text-center">
+        <p class="text-[11px] text-slate-400">
+          Default Credential: <span class="font-mono text-[#C8A45D] font-bold"></span> / <span class="font-mono text-[#C8A45D] font-bold"></span>
+        </p>
+        <a href="/" class="inline-block text-xs text-slate-400 hover:text-[#C8A45D] mt-2 transition">
+          ← Kembali ke Halaman Utama
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    async function handleLogin(e) {
+      e.preventDefault();
+      const alertEl = document.getElementById('login-alert');
+      const btn = document.getElementById('login-btn');
+      
+      alertEl.classList.add('hidden');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="bi bi-arrow-repeat animate-spin text-lg"></i> <span>Memverifikasi...</span>`;
+
+      const payload = {
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value
+      };
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          window.location.href = data.redirectUrl || '/views/admin/dashboard.html';
+        } else {
+          alertEl.textContent = data.message || 'Login gagal. Periksa username dan password.';
+          alertEl.classList.remove('hidden');
+          btn.disabled = false;
+          btn.innerHTML = `<span>MASUK PORTAL ADMIN</span> <i class="bi bi-box-arrow-in-right text-base"></i>`;
+        }
+      } catch (err) {
+        alertEl.textContent = 'Terjadi kesalahan sistem: ' + err.message;
+        alertEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = `<span>MASUK PORTAL ADMIN</span> <i class="bi bi-box-arrow-in-right text-base"></i>`;
+      }
+    }
+  </script>
+</body>
+</html>

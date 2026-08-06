@@ -1,0 +1,134 @@
+/* Custom Styles for CASANAWASENA */
+
+:root {
+  --color-navy: #0F172A;
+  --color-navy-dark: #0A0F1D;
+  --color-gold: #C8A45D;
+  --color-gold-light: #E6CA85;
+  --color-gold-dark: #9A7731;
+}
+
+body {
+  font-family: 'Inter', 'Poppins', sans-serif;
+  background-color: #0F172A;
+  color: #F8FAFC;
+}
+
+/* Gold Gradient Text */
+.gold-text {
+  background: linear-gradient(135deg, #C8A45D 0%, #F3E5AB 50%, #B89243 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Gold Gradient Border */
+.gold-border {
+  border: 1px solid rgba(200, 164, 93, 0.3);
+}
+
+.gold-border-focus:focus {
+  border-color: #C8A45D;
+  box-shadow: 0 0 0 3px rgba(200, 164, 93, 0.2);
+}
+
+/* Gold Button */
+.btn-gold {
+  background: linear-gradient(135deg, #C8A45D 0%, #B89243 100%);
+  color: #0F172A;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #D4AF37 0%, #C8A45D 100%);
+  box-shadow: 0 4px 20px rgba(200, 164, 93, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Glassmorphism Card */
+.glass-card {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(200, 164, 93, 0.2);
+  border-radius: 1rem;
+}
+
+.glass-card-light {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(200, 164, 93, 0.25);
+  border-radius: 1rem;
+  color: #0F172A;
+}
+
+/* Ticket Styling */
+.ticket-container {
+  background: linear-gradient(145deg, #1E293B 0%, #0F172A 100%);
+  border: 2px solid #C8A45D;
+  position: relative;
+  overflow: hidden;
+}
+
+.ticket-notch-left {
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background-color: #0F172A;
+  border-radius: 50%;
+}
+
+.ticket-notch-right {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background-color: #0F172A;
+  border-radius: 50%;
+}
+
+/* Scanner Laser Line Animation */
+@keyframes scan-line {
+  0% { top: 0%; }
+  50% { top: 95%; }
+  100% { top: 0%; }
+}
+
+.scanner-overlay {
+  position: relative;
+  border: 2px solid #C8A45D;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.laser-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #C8A45D, #00FF88, #C8A45D, transparent);
+  box-shadow: 0 0 15px #C8A45D, 0 0 8px #00FF88;
+  animation: scan-line 2.5s infinite ease-in-out;
+  z-index: 10;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0F172A;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C8A45D;
+}

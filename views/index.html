@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CASANAWASENA - Pendaftaran Event</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <!-- Bootstrap Icons CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+
+<body
+  class="bg-[#0F172A] text-slate-100 min-h-screen flex flex-col justify-between selection:bg-[#C8A45D] selection:text-slate-900">
+
+  <!-- TOP NAVBAR -->
+  <header class="border-b border-[#C8A45D]/20 bg-[#0F172A]/90 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+
+      <!-- Logo Brand -->
+      <a href="/" class="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+        <div
+          class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#C8A45D] to-[#9A7731] p-0.5 shadow-lg shadow-[#C8A45D]/20">
+          <div class="w-full h-full bg-[#0F172A] rounded-[10px] flex items-center justify-center">
+            <i
+              class="bi bi-building-fill text-[#C8A45D] text-lg sm:text-xl group-hover:scale-110 transition-transform"></i>
+          </div>
+        </div>
+        <div>
+          <span
+            class="text-base sm:text-xl font-extrabold tracking-wider font-['Poppins'] gold-text block">CASANAWASENA</span>
+          <span class="hidden sm:block text-[10px] font-medium text-slate-400 tracking-widest uppercase">Cozy Luxury
+            Kost</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Actions -->
+      <div class="hidden md:flex items-center gap-3 sm:gap-4">
+        <button onclick="openLookupModal()"
+          class="text-xs sm:text-sm font-semibold text-slate-300 hover:text-[#C8A45D] px-3.5 py-2 rounded-lg border border-slate-700 hover:border-[#C8A45D]/50 transition flex items-center gap-2 cursor-pointer">
+          <i class="bi bi-ticket-perforated text-[#C8A45D]"></i>
+          <span>Cek E-Tiket Saya</span>
+        </button>
+        <a href="/admin"
+          class="text-xs sm:text-sm font-semibold bg-[#C8A45D] hover:bg-[#D4AF37] text-slate-950 px-4 py-2 rounded-lg transition shadow-md shadow-[#C8A45D]/20 flex items-center gap-1.5">
+          <i class="bi bi-shield-lock-fill"></i>
+          <span>Portal Admin</span>
+        </a>
+      </div>
+
+      <!-- Mobile Menu Toggle Button -->
+      <div class="md:hidden flex items-center gap-2">
+        <button onclick="openLookupModal()"
+          class="text-xs font-semibold text-[#C8A45D] bg-[#C8A45D]/10 border border-[#C8A45D]/30 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+          <i class="bi bi-ticket-perforated"></i>
+          <span>Cek Tiket</span>
+        </button>
+        <button onclick="toggleMobileMenu()" id="mobile-menu-btn"
+          class="p-2 text-slate-300 hover:text-[#C8A45D] focus:outline-none text-2xl rounded-lg border border-slate-700 bg-slate-900/60"
+          aria-label="Menu">
+          <i class="bi bi-list" id="mobile-menu-icon"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Dropdown Menu -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-800 bg-[#0F172A] px-4 py-3 space-y-2">
+      <button onclick="openLookupModal(); toggleMobileMenu();"
+        class="w-full text-left text-sm font-semibold text-slate-200 hover:text-[#C8A45D] p-2.5 rounded-lg hover:bg-slate-800/60 transition flex items-center gap-2">
+        <i class="bi bi-ticket-perforated text-[#C8A45D]"></i>
+        <span>Cek E-Tiket Saya</span>
+      </button>
+      <a href="/admin"
+        class="w-full text-left text-sm font-semibold text-slate-950 bg-[#C8A45D] hover:bg-[#D4AF37] p-2.5 rounded-lg transition flex items-center gap-2">
+        <i class="bi bi-shield-lock-fill"></i>
+        <span>Portal Admin</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- HERO & REGISTRATION FORM -->
+  <main class="flex-grow py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+
+    <!-- Decorative Background Lighting -->
+    <div
+      class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#C8A45D]/10 rounded-full blur-[120px] pointer-events-none">
+    </div>
+
+    <div class="max-w-4xl mx-auto relative z-10">
+
+      <!-- Section Title -->
+      <div class="text-center mb-10">
+        <span
+          class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C8A45D]/10 border border-[#C8A45D]/30 text-[#C8A45D] text-xs font-semibold tracking-wide uppercase mb-3">
+          <i class="bi bi-stars"></i> You Are Invited to Our Exclusive Event
+        </span>
+        <h1 class="text-3xl sm:text-5xl font-extrabold font-['Poppins'] tracking-tight mb-3">
+          Pendaftaran & Presensi <span class="gold-text">CASANAWASENA</span>
+        </h1>
+        <p class="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+          "Kenal Sebelum Kenal Banget Vol II"
+        </p>
+      </div>
+
+      <!-- Registration Form Card -->
+      <div class="glass-card p-6 sm:p-10 shadow-2xl relative">
+        <div class="border-b border-slate-800 pb-6 mb-8 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold font-['Poppins'] text-slate-100 flex items-center gap-2">
+              <i class="bi bi-person-badge text-[#C8A45D]"></i> Formulir Data Peserta
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Isi identitas diri Anda dengan benar 
+              .</p>
+          </div>
+          <span
+            class="text-xs text-[#C8A45D] font-mono font-semibold bg-[#C8A45D]/10 px-3 py-1 rounded-md border border-[#C8A45D]/20">
+            EVENT 2026
+          </span>
+        </div>
+
+        <form id="register-form" onsubmit="handleRegistration(event)" class="space-y-6">
+
+          <!-- Alert Box -->
+          <div id="form-alert" class="hidden p-4 rounded-xl border text-sm font-medium"></div>
+
+          <!-- Nama Lengkap -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              Nama Lengkap <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="bi bi-person-fill"></i>
+              </span>
+              <input type="text" id="nama_lengkap" required placeholder="Contoh: john doe."
+                class="w-full bg-slate-900/80 border border-slate-700 focus:border-[#C8A45D] focus:ring-1 focus:ring-[#C8A45D] rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 text-sm transition outline-none">
+            </div>
+          </div>
+
+          <!-- Grid: Prodi & Fakultas -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                Program Studi
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i class="bi bi-mortarboard-fill"></i>
+                </span>
+                <input type="text" id="prodi" placeholder="Contoh: Teknik Pertanian / Agribisnis"
+                  class="w-full bg-slate-900/80 border border-slate-700 focus:border-[#C8A45D] focus:ring-1 focus:ring-[#C8A45D] rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 text-sm transition outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                Fakultas
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i class="bi bi-building"></i>
+                </span>
+                <input type="text" id="fakultas" placeholder="Contoh: FEM / FTT"
+                  class="w-full bg-slate-900/80 border border-slate-700 focus:border-[#C8A45D] focus:ring-1 focus:ring-[#C8A45D] rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 text-sm transition outline-none">
+              </div>
+            </div>
+          </div>
+
+          <!-- Grid: Unit Rumah & Unit Kamar -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                Unit
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i class="bi bi-[#C8A45D] bi-house-door-fill"></i>
+                </span>
+                <select id="unit_rumah"
+                  class="w-full appearance-none bg-slate-900/80 border border-slate-700 focus:border-[#C8A45D] focus:ring-1 focus:ring-[#C8A45D] rounded-xl pl-10 pr-10 py-3 text-slate-100 text-sm transition outline-none">
+                  <option value="" disabled selected>Pilih Unit</option>
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="A3">A3</option>
+                  <option value="A4">A4</option>
+                  <option value="A5">A5</option>
+                  <option value="A6">A6</option>
+                  <option value="B7">B7</option>
+                  <option value="B8">B8</option>
+                  <option value="B9">B9</option>
+                  <option value="B1">B1</option>
+                  <option value="B10">B10</option>
+                  <option value="B11">B11</option>
+                  <option value="B12">B12</option>
+                  <option value="B12A">B12A</option>
+                  <option value="B14">B14</option>
+                  <option value="C15">C15</option>
+                  <option value="C16">C16</option>
+                  <option value="C17">C17</option>
+                  <option value="C18">C18</option>
+                </select>
+                <span class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i class="bi bi-chevron-down text-xs"></i>
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                Nomor
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i class="bi bi-door-closed-fill"></i>
+                </span>
+                <input type="text" id="unit_kamar" placeholder="Contoh:  101 / 202"
+                  class="w-full bg-slate-900/80 border border-slate-700 focus:border-[#C8A45D] focus:ring-1 focus:ring-[#C8A45D] rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 text-sm transition outline-none">
+              </div>
+            </div>
+          </div>
+
+          <!-- Nomor Telepon -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              Nomor WhatsApp / Telepon
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="bi bi-whatsapp"></i>
+              </span>
+              <input type="tel" id="no_telpon" placeholder="Contoh: 081234567890"
+                class="w-full bg-slate-900/80 border border-slate-700 focus:border-[#C8A45D] focus:ring-1 focus:ring-[#C8A45D] rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 text-sm transition outline-none">
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-4">
+            <button type="submit" id="submit-btn"
+              class="w-full btn-gold py-4 rounded-xl text-slate-950 font-bold text-base flex items-center justify-center gap-2 shadow-xl hover:scale-[1.01] active:scale-[0.99] transition cursor-pointer">
+              <span>DAFTAR & GENERATE E-TIKET</span>
+              <i class="bi bi-arrow-right-circle-fill text-lg"></i>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- LOOKUP TICKET MODAL -->
+  <div id="lookup-modal"
+    class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full p-6 sm:p-8 rounded-2xl relative border border-[#C8A45D]/40">
+      <button onclick="closeLookupModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-100 text-xl">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <div class="text-center mb-6">
+        <div
+          class="w-12 h-12 bg-[#C8A45D]/10 text-[#C8A45D] rounded-xl flex items-center justify-center mx-auto mb-3 text-2xl border border-[#C8A45D]/30">
+          <i class="bi bi-search"></i>
+        </div>
+        <h3 class="text-xl font-bold font-['Poppins'] text-slate-100">Cek Tiket Terdaftar</h3>
+        <p class="text-xs text-slate-400 mt-1">Masukkan Ticket ID Anda (Contoh: CSN-2026-8812)</p>
+      </div>
+
+      <form onsubmit="handleLookupTicket(event)" class="space-y-4">
+        <div>
+          <input type="text" id="lookup-ticket-id" required placeholder="CSN-2026-XXXX"
+            class="w-full bg-slate-900 border border-slate-700 focus:border-[#C8A45D] rounded-xl px-4 py-3 text-center uppercase font-mono tracking-widest text-slate-100 text-base outline-none">
+        </div>
+        <button type="submit" class="w-full btn-gold py-3 rounded-xl font-bold text-slate-950 text-sm">
+          Buka E-Tiket
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500 bg-[#0F172A]">
+    <div class="max-w-7xl mx-auto px-4">
+      <p class="font-semibold text-slate-400">© 2026 CASANAWASENA Property Developer & Management. All rights reserved.
+      </p>
+      <p class="mt-1 text-slate-500">Sistem Presensi QR E-Ticket & Automated Check-in Realtime.</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+    async function handleRegistration(e) {
+      e.preventDefault();
+      const alertEl = document.getElementById('form-alert');
+      const submitBtn = document.getElementById('submit-btn');
+
+      alertEl.className = 'hidden';
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="bi bi-arrow-repeat animate-spin text-lg"></i> <span>Memproses E-Tiket...</span>`;
+
+      const payload = {
+        nama_lengkap: document.getElementById('nama_lengkap').value,
+        prodi: document.getElementById('prodi').value,
+        fakultas: document.getElementById('fakultas').value,
+        unit_rumah: document.getElementById('unit_rumah').value,
+        unit_kamar: document.getElementById('unit_kamar').value,
+        no_telpon: document.getElementById('no_telpon').value
+      };
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          window.location.href = data.redirectUrl;
+        } else {
+          alertEl.className = 'p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm font-medium';
+          alertEl.textContent = data.message || 'Gagal mendaftar.';
+          alertEl.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<span>DAFTAR & GENERATE E-TIKET</span> <i class="bi bi-arrow-right-circle-fill text-lg"></i>`;
+        }
+      } catch (err) {
+        alertEl.className = 'p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm font-medium';
+        alertEl.textContent = 'Terjadi kesalahan jaringan atau server: ' + err.message;
+        alertEl.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span>DAFTAR & GENERATE E-TIKET</span> <i class="bi bi-arrow-right-circle-fill text-lg"></i>`;
+      }
+    }
+
+    function openLookupModal() {
+      const modal = document.getElementById('lookup-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeLookupModal() {
+      const modal = document.getElementById('lookup-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleLookupTicket(e) {
+      e.preventDefault();
+      const ticketId = document.getElementById('lookup-ticket-id').value.trim();
+      if (ticketId) {
+        window.location.href = `/success.html?ticket_id=${encodeURIComponent(ticketId)}`;
+      }
+    }
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const icon = document.getElementById('mobile-menu-icon');
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        icon.className = 'bi bi-x-lg';
+      } else {
+        menu.classList.add('hidden');
+        icon.className = 'bi bi-list';
+      }
+    }
+  </script>
+</body>
+
+</html>
