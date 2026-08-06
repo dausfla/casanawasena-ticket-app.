@@ -286,12 +286,12 @@
                 </a>
 
                 <!-- Toggle Check-In Status -->
-                <button onclick="toggleCheckin(${item.id})" title="Ubah Status Kehadiran" class="p-1.5 rounded-lg bg-slate-800 hover:bg-emerald-600 hover:text-white text-emerald-400 transition text-xs cursor-pointer">
+                <button onclick="toggleCheckin('${item.id}')" title="Ubah Status Kehadiran" class="p-1.5 rounded-lg bg-slate-800 hover:bg-emerald-600 hover:text-white text-emerald-400 transition text-xs cursor-pointer">
                   <i class="bi bi-arrow-repeat"></i>
                 </button>
 
                 <!-- Delete Button -->
-                <button onclick="deleteParticipant(${item.id}, '${item.nama_lengkap}')" title="Hapus Data" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-600 hover:text-white text-rose-400 transition text-xs cursor-pointer">
+                <button onclick="deleteParticipant('${item.id}', '${(item.nama_lengkap || '').replace(/'/g, "\\'")}')" title="Hapus Data" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-600 hover:text-white text-rose-400 transition text-xs cursor-pointer">
                   <i class="bi bi-trash-fill"></i>
                 </button>
 

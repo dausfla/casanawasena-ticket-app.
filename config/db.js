@@ -1,222 +1,297 @@
 process.env.TZ = 'Asia/Jakarta';
 
-import sqlite3 from 'sqlite3';
-import path from 'path';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  writeBatch 
+} from 'firebase/firestore';
 import fs from 'fs';
+import path from 'path';
 import bcrypt from 'bcryptjs';
 
-let db = null;
-let dbInitPromise = null;
-
-function getWibTimeString(offsetMs = 0) {
-  const d = new Date(Date.now() + offsetMs);
-  const utcMs = d.getTime() + (d.getTimezoneOffset() * 60000);
-  const wibDate = new Date(utcMs + (3600000 * 7));
-
-  const year = wibDate.getFullYear();
-  const month = String(wibDate.getMonth() + 1).padStart(2, '0');
-  const day = String(wibDate.getDate()).padStart(2, '0');
-  const hours = String(wibDate.getHours()).padStart(2, '0');
-  const minutes = String(wibDate.getMinutes()).padStart(2, '0');
-  const seconds = String(wibDate.getSeconds()).padStart(2, '0');
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
-
-function getDbPath() {
-  if (process.env.VERCEL) {
-    const tmpPath = '/tmp/database.db';
-    const rootPath = path.resolve('database.db');
-    if (!fs.existsSync(tmpPath) && fs.existsSync(rootPath)) {
-      try {
-        fs.copyFileSync(rootPath, tmpPath);
-        console.log('[DB] Copied root database.db to /tmp/database.db for Vercel execution.');
-      } catch (err) {
-        console.error('[DB] Error copying database.db to /tmp:', err);
-      }
-    }
-    return tmpPath;
-  }
-  return path.resolve('database.db');
-}
+let firebaseApp = null;
+let firestoreDb = null;
 
 function getDb() {
-  if (!db) {
-    const dbPath = getDbPath();
-    db = new sqlite3.Database(dbPath);
+  if (!firestoreDb) {
+    let config = {};
+    try {
+      const configPath = path.resolve('firebase-applet-config.json');
+      if (fs.existsSync(configPath)) {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      }
+    } catch (e) {
+      console.error('[DB] Error reading firebase-applet-config.json:', e);
+    }
+
+    const firebaseConfig = {
+      apiKey: config.apiKey,
+      authDomain: config.authDomain,
+      projectId: config.projectId,
+      storageBucket: config.storageBucket,
+      messagingSenderId: config.messagingSenderId,
+      appId: config.appId
+    };
+
+    firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    firestoreDb = config.firestoreDatabaseId 
+      ? getFirestore(firebaseApp, config.firestoreDatabaseId) 
+      : getFirestore(firebaseApp);
   }
-  return db;
+  return firestoreDb;
 }
 
 export const dbAsync = {
-  run(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      getDb().run(sql, params, function (err) {
-        if (err) reject(err);
-        else resolve({ lastID: this.lastID, changes: this.changes });
-      });
-    });
+  async get(sql, params = []) {
+    const db = getDb();
+
+    // 1. SELECT * FROM admins WHERE username = ?
+    if (sql.includes('FROM admins WHERE username = ?')) {
+      const q = query(collection(db, 'admins'), where('username', '==', params[0]));
+      const snap = await getDocs(q);
+      if (snap.empty) return null;
+      return { id: snap.docs[0].id, ...snap.docs[0].data() };
+    }
+
+    // 2. SELECT id, username, nama_lengkap FROM admins WHERE username = ? OR username = ?
+    if (sql.includes('FROM admins WHERE username = ? OR username = ?')) {
+      const q1 = query(collection(db, 'admins'), where('username', '==', params[0] || 'daus'));
+      const snap1 = await getDocs(q1);
+      if (!snap1.empty) return { id: snap1.docs[0].id, ...snap1.docs[0].data() };
+      const q2 = query(collection(db, 'admins'), where('username', '==', params[1] || 'admin'));
+      const snap2 = await getDocs(q2);
+      if (!snap2.empty) return { id: snap2.docs[0].id, ...snap2.docs[0].data() };
+      return { id: 'default', username: 'daus', nama_lengkap: 'Administrator Casanawasena (Daus)' };
+    }
+
+    // 3. SELECT * FROM participants WHERE ticket_id = ?
+    if (sql.includes('FROM participants') && sql.includes('WHERE ticket_id = ?')) {
+      const q = query(collection(db, 'participants'), where('ticket_id', '==', params[0]));
+      const snap = await getDocs(q);
+      if (snap.empty) return null;
+      return { id: snap.docs[0].id, ...snap.docs[0].data() };
+    }
+
+    // 4. SELECT * FROM participants WHERE id = ?
+    if (sql.includes('FROM participants') && sql.includes('WHERE id = ?')) {
+      if (!params[0]) return null;
+      const docRef = doc(db, 'participants', String(params[0]));
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        const q = query(collection(db, 'participants'), where('ticket_id', '==', String(params[0])));
+        const snap = await getDocs(q);
+        if (snap.empty) return null;
+        return { id: snap.docs[0].id, ...snap.docs[0].data() };
+      }
+      return { id: docSnap.id, ...docSnap.data() };
+    }
+
+    // 5. COUNT(*) from participants
+    if (sql.includes('COUNT(*) as count FROM participants')) {
+      const snap = await getDocs(collection(db, 'participants'));
+      if (sql.includes("WHERE status_kehadiran = 'Hadir'")) {
+        const hadirCount = snap.docs.filter(d => d.data().status_kehadiran === 'Hadir').length;
+        return { count: hadirCount };
+      }
+      return { count: snap.docs.length };
+    }
+
+    return null;
   },
-  get(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      getDb().get(sql, params, (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
+
+  async all(sql, params = []) {
+    const db = getDb();
+    const snap = await getDocs(collection(db, 'participants'));
+    const allParticipants = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // SELECT * FROM participants ORDER BY id DESC / waktu_checkin
+    if (sql.includes('FROM participants') && sql.includes('ORDER BY')) {
+      if (sql.includes("status_kehadiran = 'Hadir'")) {
+        const hadirList = allParticipants.filter(p => p.status_kehadiran === 'Hadir');
+        hadirList.sort((a, b) => (b.waktu_checkin || '').localeCompare(a.waktu_checkin || ''));
+        if (sql.includes('LIMIT 6')) {
+          return hadirList.slice(0, 6);
+        }
+        return hadirList;
+      }
+      allParticipants.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+      return allParticipants;
+    }
+
+    // Grouping stats for dashboard
+    if (sql.includes('GROUP BY prodi')) {
+      const map = {};
+      allParticipants.forEach(p => {
+        const key = p.prodi || 'Tidak Diisi';
+        if (!map[key]) map[key] = { prodi: key, count: 0, hadir_count: 0 };
+        map[key].count++;
+        if (p.status_kehadiran === 'Hadir') map[key].hadir_count++;
       });
-    });
+      return Object.values(map).sort((a, b) => b.count - a.count);
+    }
+
+    if (sql.includes('GROUP BY unit_rumah')) {
+      const map = {};
+      allParticipants.forEach(p => {
+        const key = p.unit_rumah || 'Tidak Diisi';
+        if (!map[key]) map[key] = { unit_rumah: key, count: 0, hadir_count: 0 };
+        map[key].count++;
+        if (p.status_kehadiran === 'Hadir') map[key].hadir_count++;
+      });
+      return Object.values(map).sort((a, b) => b.count - a.count);
+    }
+
+    return allParticipants;
   },
-  all(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      getDb().all(sql, params, (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows);
+
+  async run(sql, params = []) {
+    const db = getDb();
+
+    // INSERT INTO admins
+    if (sql.includes('INSERT INTO admins')) {
+      const newRef = doc(collection(db, 'admins'));
+      await setDoc(newRef, {
+        username: params[0],
+        password: params[1],
+        nama_lengkap: params[2],
+        created_at: new Date().toISOString()
       });
-    });
+      return { lastID: newRef.id, changes: 1 };
+    }
+
+    // UPDATE admins
+    if (sql.includes('UPDATE admins')) {
+      const q = query(collection(db, 'admins'), where('username', '==', params[2]));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        await updateDoc(doc(db, 'admins', snap.docs[0].id), {
+          password: params[0],
+          nama_lengkap: params[1]
+        });
+      }
+      return { changes: 1 };
+    }
+
+    // INSERT INTO participants
+    if (sql.includes('INSERT INTO participants')) {
+      const participantRef = doc(collection(db, 'participants'));
+      await setDoc(participantRef, {
+        ticket_id: params[0],
+        security_token: params[1],
+        nama_lengkap: params[2],
+        prodi: params[3],
+        fakultas: params[4],
+        unit_rumah: params[5],
+        unit_kamar: params[6],
+        no_telpon: params[7],
+        status_kehadiran: 'Tidak Hadir',
+        waktu_checkin: null,
+        petugas_checkin: null,
+        created_at: params[8] || new Date().toISOString()
+      });
+      return { lastID: participantRef.id, changes: 1 };
+    }
+
+    // UPDATE participants
+    if (sql.includes('UPDATE participants')) {
+      const targetId = String(params[params.length - 1]);
+      let realRef = doc(db, 'participants', targetId);
+      const docSnap = await getDoc(realRef);
+
+      if (!docSnap.exists()) {
+        const q = query(collection(db, 'participants'), where('ticket_id', '==', targetId));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          realRef = doc(db, 'participants', snap.docs[0].id);
+        }
+      }
+
+      if (sql.includes("status_kehadiran = 'Hadir'") && params.length === 2) {
+        await updateDoc(realRef, {
+          status_kehadiran: 'Hadir',
+          waktu_checkin: params[0],
+          petugas_checkin: 'Admin CSN'
+        });
+      } else if (params.length === 4) {
+        await updateDoc(realRef, {
+          status_kehadiran: params[0],
+          waktu_checkin: params[1],
+          petugas_checkin: params[2]
+        });
+      }
+      return { changes: 1 };
+    }
+
+    // DELETE FROM participants WHERE id = ?
+    if (sql.includes('DELETE FROM participants WHERE id = ?')) {
+      const targetId = String(params[0]);
+      const docRef = doc(db, 'participants', targetId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        await deleteDoc(docRef);
+      } else {
+        const q = query(collection(db, 'participants'), where('ticket_id', '==', targetId));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          await deleteDoc(doc(db, 'participants', snap.docs[0].id));
+        }
+      }
+      return { changes: 1 };
+    }
+
+    // DELETE FROM participants (Clear All)
+    if (sql.includes('DELETE FROM participants')) {
+      const snap = await getDocs(collection(db, 'participants'));
+      const batch = writeBatch(db);
+      snap.docs.forEach(d => {
+        batch.delete(d.ref);
+      });
+      await batch.commit();
+      return { changes: snap.docs.length };
+    }
+
+    return { changes: 0 };
   },
-  exec(sql) {
-    return new Promise((resolve, reject) => {
-      getDb().exec(sql, (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+
+  async exec(sql) {
+    if (sql.includes('DELETE FROM participants')) {
+      await this.run('DELETE FROM participants');
+    }
   }
 };
 
 export async function initDb() {
-  if (dbInitPromise) return dbInitPromise;
+  const db = getDb();
+  // Ensure default admin user 'daus' exists in Firestore
+  const q = query(collection(db, 'admins'), where('username', '==', 'daus'));
+  const snap = await getDocs(q);
+  const hashedPassword = await bcrypt.hash('daus123', 10);
 
-  dbInitPromise = (async () => {
-    // 1. Create admins table
-    await dbAsync.exec(`
-      CREATE TABLE IF NOT EXISTS admins (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        nama_lengkap TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // 2. Create participants table
-    await dbAsync.exec(`
-      CREATE TABLE IF NOT EXISTS participants (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ticket_id TEXT UNIQUE NOT NULL,
-        security_token TEXT NOT NULL,
-        nama_lengkap TEXT NOT NULL,
-        prodi TEXT,
-        fakultas TEXT,
-        unit_rumah TEXT,
-        unit_kamar TEXT,
-        no_telpon TEXT,
-        status_kehadiran TEXT DEFAULT 'Tidak Hadir',
-        waktu_checkin DATETIME,
-        petugas_checkin TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // 3. Seed default Admin if not exists
-    const existingDaus = await dbAsync.get('SELECT * FROM admins WHERE username = ?', ['daus']);
-    const hashedPassword = await bcrypt.hash('daus123', 10);
-    if (!existingDaus) {
-      await dbAsync.run(
-        'INSERT INTO admins (username, password, nama_lengkap) VALUES (?, ?, ?)',
-        ['daus', hashedPassword, 'Administrator Casanawasena (Daus)']
-      );
-      console.log('[DB] Seeded default admin user: username=daus, password=daus123');
-    } else {
-      await dbAsync.run(
-        'UPDATE admins SET password = ?, nama_lengkap = ? WHERE username = ?',
-        [hashedPassword, 'Administrator Casanawasena (Daus)', 'daus']
-      );
-      console.log('[DB] Updated admin user daus password');
-    }
-
-    // 4. Seed sample participants if participants table is empty
-    const countRow = await dbAsync.get('SELECT COUNT(*) as count FROM participants');
-    if (countRow && countRow.count === 0) {
-      const sampleData = [
-        {
-          ticket_id: 'CSN-2026-8812',
-          security_token: 'XK92M7A1',
-          nama_lengkap: 'Budi Santoso',
-          prodi: 'Arsitektur',
-          fakultas: 'Teknik & Perencanaan',
-          unit_rumah: 'Cluster Emerald',
-          unit_kamar: 'A-12',
-          no_telpon: '081234567890',
-          status_kehadiran: 'Hadir',
-          waktu_checkin: getWibTimeString(-1000 * 60 * 45),
-          petugas_checkin: 'Admin CSN'
-        },
-        {
-          ticket_id: 'CSN-2026-9043',
-          security_token: 'PL48B2Q9',
-          nama_lengkap: 'Siti Rahmawati',
-          prodi: 'Teknik Sipil',
-          fakultas: 'Teknik & Perencanaan',
-          unit_rumah: 'Cluster Sapphire',
-          unit_kamar: 'B-05',
-          no_telpon: '082198765432',
-          status_kehadiran: 'Hadir',
-          waktu_checkin: getWibTimeString(-1000 * 60 * 15),
-          petugas_checkin: 'Admin CSN'
-        },
-        {
-          ticket_id: 'CSN-2026-3108',
-          security_token: 'MN77R3T4',
-          nama_lengkap: 'Ahmad Rizky Pratama',
-          prodi: 'Desain Interior',
-          fakultas: 'Seni & Desain',
-          unit_rumah: 'Cluster Diamond',
-          unit_kamar: 'C-08',
-          no_telpon: '085711223344',
-          status_kehadiran: 'Tidak Hadir',
-          waktu_checkin: null,
-          petugas_checkin: null
-        },
-        {
-          ticket_id: 'CSN-2026-5541',
-          security_token: 'WK19C5E8',
-          nama_lengkap: 'Dian Permata',
-          prodi: 'Manajemen Properti',
-          fakultas: 'Ekonomi & Bisnis',
-          unit_rumah: 'Cluster Ruby',
-          unit_kamar: 'R-02',
-          no_telpon: '081399887766',
-          status_kehadiran: 'Tidak Hadir',
-          waktu_checkin: null,
-          petugas_checkin: null
-        }
-      ];
-
-      for (const item of sampleData) {
-        await dbAsync.run(
-          `INSERT INTO participants 
-           (ticket_id, security_token, nama_lengkap, prodi, fakultas, unit_rumah, unit_kamar, no_telpon, status_kehadiran, waktu_checkin, petugas_checkin)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            item.ticket_id,
-            item.security_token,
-            item.nama_lengkap,
-            item.prodi,
-            item.fakultas,
-            item.unit_rumah,
-            item.unit_kamar,
-            item.no_telpon,
-            item.status_kehadiran,
-            item.waktu_checkin,
-            item.petugas_checkin
-          ]
-        );
-      }
-      console.log('[DB] Seeded sample participants');
-    }
-  })();
-
-  return dbInitPromise;
+  if (snap.empty) {
+    const adminRef = doc(collection(db, 'admins'));
+    await setDoc(adminRef, {
+      username: 'daus',
+      password: hashedPassword,
+      nama_lengkap: 'Administrator Casanawasena (Daus)',
+      created_at: new Date().toISOString()
+    });
+    console.log('[Firestore] Seeded default admin user: username=daus, password=daus123');
+  } else {
+    await updateDoc(doc(db, 'admins', snap.docs[0].id), {
+      password: hashedPassword,
+      nama_lengkap: 'Administrator Casanawasena (Daus)'
+    });
+  }
 }
 
 export default dbAsync;

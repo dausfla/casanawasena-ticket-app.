@@ -1,0 +1,103 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "Administrator account for Casanawasena system",
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "Admin username"
+        },
+        "password": {
+          "type": "string",
+          "description": "Hashed password"
+        },
+        "nama_lengkap": {
+          "type": "string",
+          "description": "Admin full name"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Created timestamp string"
+        }
+      },
+      "required": [
+        "username",
+        "password",
+        "nama_lengkap"
+      ]
+    },
+    "Participant": {
+      "title": "Participant",
+      "description": "Event participant registration and ticket attendance data",
+      "type": "object",
+      "properties": {
+        "ticket_id": {
+          "type": "string",
+          "description": "Unique ticket ID"
+        },
+        "security_token": {
+          "type": "string",
+          "description": "Unique security token"
+        },
+        "nama_lengkap": {
+          "type": "string",
+          "description": "Participant full name"
+        },
+        "prodi": {
+          "type": "string",
+          "description": "Study program"
+        },
+        "fakultas": {
+          "type": "string",
+          "description": "Faculty"
+        },
+        "unit_rumah": {
+          "type": "string",
+          "description": "Housing unit"
+        },
+        "unit_kamar": {
+          "type": "string",
+          "description": "Room unit"
+        },
+        "no_telpon": {
+          "type": "string",
+          "description": "Phone number"
+        },
+        "status_kehadiran": {
+          "type": "string",
+          "description": "Attendance status (Hadir / Tidak Hadir)"
+        },
+        "waktu_checkin": {
+          "type": "string",
+          "description": "Check-in formatted timestamp"
+        },
+        "petugas_checkin": {
+          "type": "string",
+          "description": "Check-in officer name"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Created timestamp string"
+        }
+      },
+      "required": [
+        "ticket_id",
+        "security_token",
+        "nama_lengkap",
+        "status_kehadiran"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Collection of administrator credentials"
+    },
+    "/participants/{participantId}": {
+      "schema": "Participant",
+      "description": "Collection of event participants"
+    }
+  }
+}
