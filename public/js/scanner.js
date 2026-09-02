@@ -205,6 +205,13 @@ async function startCameraScanner() {
       targetCameraConfig = { facingMode: 'environment' };
     }
 
+    // Make container visible BEFORE starting Html5Qrcode so it can measure dimensions accurately
+    if (placeholderEl) placeholderEl.classList.add('hidden');
+    if (readerElement) {
+      readerElement.classList.remove('hidden');
+      readerElement.style.display = 'block';
+    }
+
     const qrCodeSuccessCallback = (decodedText) => {
       if (isScanning && !isPaused) {
         handleScannedCode(decodedText);
@@ -216,23 +223,37 @@ async function startCameraScanner() {
     };
 
     const scanConfig = {
-      fps: 15,
-      qrbox: (viewfinderWidth, viewfinderHeight) => {
-        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-        const size = Math.max(160, Math.floor(minEdge * 0.72));
-        return { width: size, height: size };
-      },
-      aspectRatio: 1.0,
+      fps: 20,
+      qrbox: { width: 250, height: 250 },
+      aspectRatio: 1.333333,
       disableFlip: false
     };
 
     // Helper to attempt start with a fresh instance
     async function attemptStart(cameraParam) {
       await cleanupScannerInstance();
+      if (readerElement) {
+        readerElement.innerHTML = '';
+        readerElement.classList.remove('hidden');
+        readerElement.style.display = 'block';
+      }
+
       const instance = new Html5Qrcode('qr-reader', {
         verbose: false
       });
       await instance.start(cameraParam, scanConfig, qrCodeSuccessCallback, qrCodeErrorCallback);
+      
+      // Ensure video element styling is completely visible and responsive
+      const videoEl = readerElement.querySelector('video');
+      if (videoEl) {
+        videoEl.style.width = '100%';
+        videoEl.style.height = '100%';
+        videoEl.style.maxHeight = '380px';
+        videoEl.style.objectFit = 'cover';
+        videoEl.style.display = 'block';
+        videoEl.style.borderRadius = '0.875rem';
+      }
+
       return instance;
     }
 
@@ -268,6 +289,8 @@ async function startCameraScanner() {
     }
 
     if (!activeInstance) {
+      if (placeholderEl) placeholderEl.classList.remove('hidden');
+      if (readerElement) readerElement.classList.add('hidden');
       throw lastError || new Error('Tidak dapat membuka kamera pada perangkat ini.');
     }
 

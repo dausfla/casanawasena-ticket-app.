@@ -68,18 +68,57 @@
 
     .scanner-overlay {
       background: #0F1E13;
+      position: relative;
+    }
+
+    /* Make video and scan region fit nicely */
+    #qr-reader {
+      width: 100% !important;
+      border: none !important;
+      position: relative;
+      background: transparent;
+      min-height: 280px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #qr-reader video {
+      width: 100% !important;
+      height: 100% !important;
+      max-height: 380px !important;
+      object-fit: cover !important;
+      border-radius: 0.875rem !important;
+      display: block !important;
+    }
+
+    #qr-reader__scan_region {
+      position: relative !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 100% !important;
+    }
+
+    #qr-reader__dashboard {
+      display: none !important;
+    }
+
+    #qr-reader__status_span {
+      display: none !important;
     }
 
     .laser-line {
       position: absolute;
-      left: 8%;
-      right: 8%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #6FA96E, transparent);
+      left: 6%;
+      right: 6%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #6FA96E, #A3E635, #6FA96E, transparent);
       top: 15%;
       animation: laser-scan 2.2s ease-in-out infinite;
-      z-index: 10;
-      box-shadow: 0 0 8px 1px rgba(111, 169, 110, 0.8);
+      z-index: 15;
+      box-shadow: 0 0 10px 2px rgba(111, 169, 110, 0.9);
+      pointer-events: none;
     }
 
     @keyframes laser-scan {
