@@ -1,19 +1,662 @@
+ <!DOCTYPE html>
+<html lang="id">
 
-1788319531490_image.png
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!DOCTYPE html> <html lang="id"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Google Search Console Verification --> <meta name="google-site-verification" content="E3biYKvL0bcz9x_4R24w6Z9CTJlbmUMDfq4UB3hjlpE"> <title>CASANAWAS
+  <!-- Google Search Console Verification -->
+  <meta name="google-site-verification" content="E3biYKvL0bcz9x_4R24w6Z9CTJlbmUMDfq4UB3hjlpE">
 
-pasted
+  <title>SMART STUDENT VILLA - Pendaftaran Event</title>
 
-tolong bantu saya meredesain dari kode itu menjadi seperti ini ui nya unit dan Nomor bisa dikasih keterangan kalo bukan penghuni boleh kosongkan (jadi opsional jgn wajib isi), berikan saya kodingan terbaru nya saja
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-Ran 2 commands, viewed a file, and 2 more tools
-Field Unit dan Nomor sudah dibuat opsional (tidak required) dan sudah ditambahkan label "(opsional)" plus keterangan kecil di bawahnya: "Boleh dikosongkan jika Anda bukan penghuni." Tema warna, logo, dan copy hero sudah disesuaikan ke gaya "Smart Student Villa" seperti gambar referensi.
+  <!-- Google Fonts: Inter & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Fredoka:wght@500;600;700&display=swap"
+    rel="stylesheet">
 
+  <!-- Bootstrap Icons CDN -->
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-c
+  <style>
+    :root {
+      --ssv-green-deep: #1F4D2C;
+      --ssv-green: #3A7D44;
+      --ssv-green-light: #6FA96E;
+      --ssv-cream: #F7F5EC;
+      --ssv-cream-2: #FBFAF4;
+    }
 
-Claude is AI and can make mistakes.
+    body {
+      font-family: 'Inter', sans-serif;
+    }
 
+    .font-display {
+      font-family: 'Fredoka', 'Poppins', sans-serif;
+    }
 
+    .green-text {
+      background: linear-gradient(90deg, #2F6B3A, #6FA96E);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .btn-green {
+      background: linear-gradient(180deg, #4A8C4F, #2F6B3A);
+    }
+
+    .btn-green:hover {
+      background: linear-gradient(180deg, #558F58, #356E3B);
+    }
+
+    .glass-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(58, 125, 68, 0.15);
+      border-radius: 1.75rem;
+    }
+
+    .doodle {
+      position: absolute;
+      opacity: 0.9;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .speech-bubble {
+      position: relative;
+      background: #FFFFFF;
+      border: 2px solid var(--ssv-green);
+      border-radius: 1rem;
+    }
+
+    .speech-bubble:after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 0;
+    }
+
+    .wobble {
+      display: inline-block;
+      transform: rotate(-4deg);
+    }
+
+    ::selection {
+      background: #6FA96E;
+      color: #ffffff;
+    }
+  </style>
+</head>
+
+<body class="bg-[#F7F5EC] text-slate-800 min-h-screen flex flex-col justify-between">
+
+  <!-- TOP NAVBAR -->
+  <header class="border-b border-[#3A7D44]/15 bg-[#FBFAF4]/95 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+
+      <!-- Logo Brand -->
+      <a href="/" class="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+        <div
+          class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border-2 border-[#2F6B3A] bg-white flex items-center justify-center shadow-sm">
+          <i class="bi bi-tree-fill text-[#2F6B3A] text-xl sm:text-2xl group-hover:scale-110 transition-transform"></i>
+        </div>
+
+        <div class="leading-tight">
+          <span class="text-base sm:text-xl font-extrabold tracking-wide font-display text-[#1F4D2C] block">
+            SMART STUDENT VILLA
+          </span>
+
+          <span class="hidden sm:block text-[10px] font-semibold text-[#4A8C4F] tracking-widest uppercase">
+            Live Smart, Study Smarter
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Actions -->
+      <div class="hidden md:flex items-center gap-3 sm:gap-4">
+
+        <button onclick="openLookupModal()"
+          class="text-xs sm:text-sm font-semibold text-slate-600 hover:text-[#2F6B3A] px-3.5 py-2 rounded-lg border border-slate-300 hover:border-[#3A7D44]/60 transition flex items-center gap-2 cursor-pointer bg-white">
+
+          <i class="bi bi-ticket-perforated text-[#2F6B3A]"></i>
+          <span>Cek E-Tiket Saya</span>
+        </button>
+
+        <a href="/admin"
+          class="text-xs sm:text-sm font-semibold btn-green hover:opacity-95 text-white px-4 py-2 rounded-lg transition shadow-md shadow-[#3A7D44]/20 flex items-center gap-1.5">
+
+          <i class="bi bi-shield-lock-fill"></i>
+          <span>Portal Admin</span>
+        </a>
+
+      </div>
+
+      <!-- Mobile Menu Toggle Button -->
+      <div class="md:hidden flex items-center gap-2">
+
+        <button onclick="openLookupModal()"
+          class="text-xs font-semibold text-[#2F6B3A] bg-[#3A7D44]/10 border border-[#3A7D44]/30 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+
+          <i class="bi bi-ticket-perforated"></i>
+          <span>Cek Tiket</span>
+        </button>
+
+        <button onclick="toggleMobileMenu()" id="mobile-menu-btn"
+          class="p-2 text-slate-600 hover:text-[#2F6B3A] focus:outline-none text-2xl rounded-lg border border-slate-300 bg-white"
+          aria-label="Menu">
+
+          <i class="bi bi-list" id="mobile-menu-icon"></i>
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- Mobile Dropdown Menu -->
+    <div id="mobile-menu"
+      class="hidden md:hidden border-t border-slate-200 bg-[#FBFAF4] px-4 py-3 space-y-2">
+
+      <button onclick="openLookupModal(); toggleMobileMenu();"
+        class="w-full text-left text-sm font-semibold text-slate-700 hover:text-[#2F6B3A] p-2.5 rounded-lg hover:bg-[#3A7D44]/5 transition flex items-center gap-2">
+
+        <i class="bi bi-ticket-perforated text-[#2F6B3A]"></i>
+        <span>Cek E-Tiket Saya</span>
+      </button>
+
+      <a href="/admin"
+        class="w-full text-left text-sm font-semibold text-white btn-green p-2.5 rounded-lg transition flex items-center gap-2">
+
+        <i class="bi bi-shield-lock-fill"></i>
+        <span>Portal Admin</span>
+      </a>
+
+    </div>
+  </header>
+
+  <!-- HERO & REGISTRATION FORM -->
+  <main class="flex-grow py-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+
+    <!-- Decorative Background Dots -->
+    <div class="absolute inset-0 opacity-[0.35] pointer-events-none"
+      style="background-image: radial-gradient(#3A7D44 1px, transparent 1px); background-size: 26px 26px;"></div>
+
+    <!-- Decorative doodles (hidden on small screens to avoid crowding the form) -->
+    <div class="hidden lg:block doodle top-24 left-[6%] text-[#2F6B3A] text-6xl rotate-[-12deg]">
+      <i class="bi bi-megaphone-fill"></i>
+    </div>
+    <div class="hidden lg:block doodle top-52 left-[10%] speech-bubble px-4 py-2 rotate-[-6deg]">
+      <span class="font-display font-bold text-sm text-[#2F6B3A]">GRAND<br>OPENING!</span>
+    </div>
+    <div class="hidden lg:block doodle top-16 right-[8%] text-[#2F6B3A] text-5xl rotate-[10deg]">
+      <i class="bi bi-cup-hot-fill"></i>
+    </div>
+    <div class="hidden lg:block doodle top-20 right-[2%] speech-bubble px-4 py-2 rotate-[4deg] text-xs leading-relaxed">
+      <span class="font-semibold text-[#2F6B3A]">GOOD COFFEE<br>GOOD MOOD<br>GOOD DAY!</span>
+    </div>
+
+    <div class="max-w-4xl mx-auto relative z-10">
+
+      <!-- Section Title -->
+      <div class="text-center mb-10">
+
+        <span
+          class="wobble inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2F6B3A] text-white text-xs font-bold tracking-wide uppercase mb-4 shadow-md">
+          <i class="bi bi-stars"></i>
+          You Are Invited!
+        </span>
+
+        <h1 class="text-3xl sm:text-5xl font-extrabold font-display tracking-tight mb-2 text-[#1F4D2C]">
+          Pendaftaran dan Event
+        </h1>
+
+        <h2 class="text-4xl sm:text-6xl font-extrabold font-display tracking-tight mb-2 green-text">
+          2026 Student Mart4U
+        </h2>
+
+        <p class="text-[#2F6B3A] text-sm sm:base font-semibold flex items-center justify-center gap-2 mt-2">
+          <i class="bi bi-house-heart-fill"></i>
+          Smart Student Villa
+        </p>
+
+      </div>
+
+      <!-- Registration Form Card -->
+      <div class="glass-card p-6 sm:p-10 shadow-xl relative">
+
+        <div class="border-b border-slate-200 pb-6 mb-8 flex items-center justify-between">
+
+          <div>
+
+            <h2 class="text-xl font-bold font-display text-[#1F4D2C] flex items-center gap-2">
+              <i class="bi bi-clipboard2-check-fill text-[#2F6B3A]"></i>
+              Formulir Data Peserta
+            </h2>
+
+            <p class="text-xs text-slate-500 mt-0.5">
+              Isi identitas diri Anda dengan benar.
+            </p>
+
+          </div>
+
+          <span
+            class="text-xs text-white font-bold bg-[#2F6B3A] px-3 py-1 rounded-full">
+            EVENT 2026
+          </span>
+
+        </div>
+
+        <form id="register-form" onsubmit="handleRegistration(event)" class="space-y-6">
+
+          <!-- Alert Box -->
+          <div id="form-alert" class="hidden p-4 rounded-xl border text-sm font-medium"></div>
+
+          <!-- Nama Lengkap -->
+          <div>
+
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+              Nama Lengkap
+              <span class="text-rose-500">*</span>
+            </label>
+
+            <div class="relative">
+
+              <span
+                class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="bi bi-person-fill"></i>
+              </span>
+
+              <input
+                type="text"
+                id="nama_lengkap"
+                required
+                placeholder="Contoh: john doe."
+                class="w-full bg-white border border-slate-300 focus:border-[#3A7D44] focus:ring-1 focus:ring-[#3A7D44] rounded-xl pl-10 pr-4 py-3 text-slate-800 placeholder-slate-400 text-sm transition outline-none">
+
+            </div>
+          </div>
+
+          <!-- Grid: Prodi & Fakultas -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div>
+
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                Program Studi
+              </label>
+
+              <div class="relative">
+
+                <span
+                  class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i class="bi bi-mortarboard-fill"></i>
+                </span>
+
+                <input
+                  type="text"
+                  id="prodi"
+                  placeholder="Contoh: Teknik Pertanian / Agribisnis"
+                  class="w-full bg-white border border-slate-300 focus:border-[#3A7D44] focus:ring-1 focus:ring-[#3A7D44] rounded-xl pl-10 pr-4 py-3 text-slate-800 placeholder-slate-400 text-sm transition outline-none">
+
+              </div>
+            </div>
+
+            <div>
+
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                Fakultas
+              </label>
+
+              <div class="relative">
+
+                <span
+                  class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i class="bi bi-building"></i>
+                </span>
+
+                <input
+                  type="text"
+                  id="fakultas"
+                  placeholder="Contoh: FEM / FTT"
+                  class="w-full bg-white border border-slate-300 focus:border-[#3A7D44] focus:ring-1 focus:ring-[#3A7D44] rounded-xl pl-10 pr-4 py-3 text-slate-800 placeholder-slate-400 text-sm transition outline-none">
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Grid: Unit Rumah & Unit Kamar -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div>
+
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                Unit
+                <span class="normal-case font-medium text-slate-400 text-[11px] lowercase">(opsional)</span>
+              </label>
+
+              <div class="relative">
+
+                <span
+                  class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i class="bi bi-house-door-fill"></i>
+                </span>
+
+                <select
+                  id="unit_rumah"
+                  class="w-full appearance-none bg-white border border-slate-300 focus:border-[#3A7D44] focus:ring-1 focus:ring-[#3A7D44] rounded-xl pl-10 pr-10 py-3 text-slate-800 text-sm transition outline-none">
+
+                  <option value="" selected>Pilih Unit</option>
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="A3">A3</option>
+                  <option value="A4">A4</option>
+                  <option value="A5">A5</option>
+                  <option value="A6">A6</option>
+                  <option value="B7">B7</option>
+                  <option value="B8">B8</option>
+                  <option value="B9">B9</option>
+                  <option value="B1">B1</option>
+                  <option value="B10">B10</option>
+                  <option value="B11">B11</option>
+                  <option value="B12">B12</option>
+                  <option value="B12A">B12A</option>
+                  <option value="B14">B14</option>
+                  <option value="C15">C15</option>
+                  <option value="C16">C16</option>
+                  <option value="C17">C17</option>
+                  <option value="C18">C18</option>
+
+                </select>
+
+                <span
+                  class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i class="bi bi-chevron-down text-xs"></i>
+                </span>
+
+              </div>
+
+              <p class="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1">
+                <i class="bi bi-info-circle"></i>
+                Boleh dikosongkan jika Anda bukan penghuni.
+              </p>
+            </div>
+
+            <div>
+
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                Nomor
+                <span class="normal-case font-medium text-slate-400 text-[11px] lowercase">(opsional)</span>
+              </label>
+
+              <div class="relative">
+
+                <span
+                  class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i class="bi bi-door-closed-fill"></i>
+                </span>
+
+                <input
+                  type="text"
+                  id="unit_kamar"
+                  placeholder="Contoh: 101 / 202"
+                  class="w-full bg-white border border-slate-300 focus:border-[#3A7D44] focus:ring-1 focus:ring-[#3A7D44] rounded-xl pl-10 pr-4 py-3 text-slate-800 placeholder-slate-400 text-sm transition outline-none">
+
+              </div>
+
+              <p class="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1">
+                <i class="bi bi-info-circle"></i>
+                Boleh dikosongkan jika Anda bukan penghuni.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Nomor Telepon -->
+          <div>
+
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+              Nomor WhatsApp / Telepon
+            </label>
+
+            <div class="relative">
+
+              <span
+                class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="bi bi-whatsapp"></i>
+              </span>
+
+              <input
+                type="tel"
+                id="no_telpon"
+                placeholder="Contoh: 081234567890"
+                class="w-full bg-white border border-slate-300 focus:border-[#3A7D44] focus:ring-1 focus:ring-[#3A7D44] rounded-xl pl-10 pr-4 py-3 text-slate-800 placeholder-slate-400 text-sm transition outline-none">
+
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-4">
+
+            <button
+              type="submit"
+              id="submit-btn"
+              class="w-full btn-green py-4 rounded-xl text-white font-bold text-base flex items-center justify-center gap-2 shadow-xl hover:scale-[1.01] active:scale-[0.99] transition cursor-pointer">
+
+              <span>DAFTAR & GENERATE E-TIKET</span>
+              <i class="bi bi-arrow-right-circle-fill text-lg"></i>
+
+            </button>
+
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- LOOKUP TICKET MODAL -->
+  <div
+    id="lookup-modal"
+    class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+
+    <div
+      class="glass-card max-w-md w-full p-6 sm:p-8 rounded-2xl relative border border-[#3A7D44]/40">
+
+      <button
+        onclick="closeLookupModal()"
+        class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-xl">
+
+        <i class="bi bi-x-lg"></i>
+
+      </button>
+
+      <div class="text-center mb-6">
+
+        <div
+          class="w-12 h-12 bg-[#3A7D44]/10 text-[#2F6B3A] rounded-xl flex items-center justify-center mx-auto mb-3 text-2xl border border-[#3A7D44]/30">
+
+          <i class="bi bi-search"></i>
+
+        </div>
+
+        <h3 class="text-xl font-bold font-display text-[#1F4D2C]">
+          Cek Tiket Terdaftar
+        </h3>
+
+        <p class="text-xs text-slate-500 mt-1">
+          Masukkan Ticket ID Anda (Contoh: CSN-2026-8812)
+        </p>
+
+      </div>
+
+      <form onsubmit="handleLookupTicket(event)" class="space-y-4">
+
+        <div>
+
+          <input
+            type="text"
+            id="lookup-ticket-id"
+            required
+            placeholder="CSN-2026-XXXX"
+            class="w-full bg-white border border-slate-300 focus:border-[#3A7D44] rounded-xl px-4 py-3 text-center uppercase font-mono tracking-widest text-slate-800 text-base outline-none">
+
+        </div>
+
+        <button
+          type="submit"
+          class="w-full btn-green py-3 rounded-xl font-bold text-white text-sm">
+
+          Buka E-Tiket
+
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-200 py-6 text-center text-xs text-slate-500 bg-[#FBFAF4]">
+
+    <div class="max-w-7xl mx-auto px-4">
+
+      <p class="font-semibold text-slate-500">
+        © 2026 Smart Student Villa. All rights reserved.
+      </p>
+
+      <p class="mt-1 text-slate-400">
+        Sistem Presensi QR E-Ticket & Automated Check-in Realtime.
+      </p>
+
+    </div>
+
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+    async function handleRegistration(e) {
+      e.preventDefault();
+
+      const alertEl = document.getElementById('form-alert');
+      const submitBtn = document.getElementById('submit-btn');
+
+      alertEl.className = 'hidden';
+
+      submitBtn.disabled = true;
+
+      submitBtn.innerHTML =
+        `<i class="bi bi-arrow-repeat animate-spin text-lg"></i> <span>Memproses E-Tiket...</span>`;
+
+      const payload = {
+        nama_lengkap: document.getElementById('nama_lengkap').value,
+        prodi: document.getElementById('prodi').value,
+        fakultas: document.getElementById('fakultas').value,
+        unit_rumah: document.getElementById('unit_rumah').value, // opsional, boleh kosong jika bukan penghuni
+        unit_kamar: document.getElementById('unit_kamar').value, // opsional, boleh kosong jika bukan penghuni
+        no_telpon: document.getElementById('no_telpon').value
+      };
+
+      try {
+
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+
+          window.location.href = data.redirectUrl;
+
+        } else {
+
+          alertEl.className =
+            'p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-600 text-sm font-medium';
+
+          alertEl.textContent =
+            data.message || 'Gagal mendaftar.';
+
+          alertEl.classList.remove('hidden');
+
+          submitBtn.disabled = false;
+
+          submitBtn.innerHTML =
+            `<span>DAFTAR & GENERATE E-TIKET</span> <i class="bi bi-arrow-right-circle-fill text-lg"></i>`;
+        }
+
+      } catch (err) {
+
+        alertEl.className =
+          'p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-600 text-sm font-medium';
+
+        alertEl.textContent =
+          'Terjadi kesalahan jaringan atau server: ' + err.message;
+
+        alertEl.classList.remove('hidden');
+
+        submitBtn.disabled = false;
+
+        submitBtn.innerHTML =
+          `<span>DAFTAR & GENERATE E-TIKET</span> <i class="bi bi-arrow-right-circle-fill text-lg"></i>`;
+      }
+    }
+
+    function openLookupModal() {
+      const modal = document.getElementById('lookup-modal');
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeLookupModal() {
+      const modal = document.getElementById('lookup-modal');
+
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleLookupTicket(e) {
+      e.preventDefault();
+
+      const ticketId =
+        document.getElementById('lookup-ticket-id').value.trim();
+
+      if (ticketId) {
+        window.location.href =
+          `/success.html?ticket_id=${encodeURIComponent(ticketId)}`;
+      }
+    }
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const icon = document.getElementById('mobile-menu-icon');
+
+      if (menu.classList.contains('hidden')) {
+
+        menu.classList.remove('hidden');
+        icon.className = 'bi bi-x-lg';
+
+      } else {
+
+        menu.classList.add('hidden');
+        icon.className = 'bi bi-list';
+      }
+    }
+  </script>
+
+</body>
+
+</html>
