@@ -14,8 +14,15 @@
   <!-- Bootstrap Icons CDN -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-  <!-- html5-qrcode CDN -->
+  <!-- html5-qrcode CDN with fallback -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <script>
+    if (typeof Html5Qrcode === 'undefined') {
+      const fallbackScript = document.createElement('script');
+      fallbackScript.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+      document.head.appendChild(fallbackScript);
+    }
+  </script>
 
   <style>
     :root {
@@ -194,29 +201,65 @@
       <!-- LEFT COLUMN: LIVE CAMERA VIEWPORT (8 COLS) -->
       <div class="lg:col-span-7 glass-card p-6 shadow-xl relative">
 
-        <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
-          <h2 class="text-base font-bold font-display text-[#1F4D2C] flex items-center gap-2">
-            <i class="bi bi-camera-video-fill text-[#2F6B3A]"></i> Kamera Pemindai
-          </h2>
+        <div class="flex flex-wrap items-center justify-between border-b border-slate-200 pb-4 mb-4 gap-3">
+          <div>
+            <h2 class="text-base font-bold font-display text-[#1F4D2C] flex items-center gap-2">
+              <i class="bi bi-camera-video-fill text-[#2F6B3A]"></i> Kamera Pemindai
+            </h2>
+            <p class="text-[11px] text-slate-400">Pilih sumber kamera atau unggah berkas QR</p>
+          </div>
 
-          <div class="flex gap-2">
-            <button id="start-cam-btn" onclick="startCameraScanner()" class="btn-green text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer">
-              <i class="bi bi-play-circle-fill"></i> Aktifkan Kamera
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Camera selection dropdown -->
+            <div id="camera-select-container" class="hidden">
+              <select id="camera-select" onchange="onCameraSelectChange()" class="bg-white border border-slate-300 text-slate-700 text-xs rounded-xl px-2.5 py-2 font-medium outline-none focus:border-[#3A7D44] max-w-[150px] sm:max-w-[190px] truncate shadow-sm">
+                <option value="">Pilih Kamera...</option>
+              </select>
+            </div>
+
+            <!-- Upload QR File input & button -->
+            <input type="file" id="qr-file-input" accept="image/*" class="hidden" onchange="handleQrFileUpload(event)">
+            <button onclick="document.getElementById('qr-file-input').click()" title="Scan dari berkas gambar QR" class="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-sm">
+              <i class="bi bi-image text-[#2F6B3A]"></i>
+              <span class="hidden sm:inline">Scan Gambar</span>
             </button>
-            <button id="stop-cam-btn" onclick="stopCameraScanner()" class="hidden bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
-              <i class="bi bi-stop-circle-fill"></i> Matikan Kamera
+
+            <!-- Torch / Flash button (dynamically shown if supported) -->
+            <button id="torch-btn" onclick="toggleTorch()" class="hidden bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm">
+              <i class="bi bi-lightning-charge-fill" id="torch-icon"></i>
+              <span id="torch-label" class="hidden sm:inline">Flash</span>
+            </button>
+
+            <!-- Start / Stop Camera Buttons -->
+            <button id="start-cam-btn" onclick="startCameraScanner()" class="btn-green text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition">
+              <i class="bi bi-play-circle-fill"></i> <span>Aktifkan Kamera</span>
+            </button>
+            <button id="stop-cam-btn" onclick="stopCameraScanner()" class="hidden bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md">
+              <i class="bi bi-stop-circle-fill"></i> <span>Matikan Kamera</span>
             </button>
           </div>
         </div>
 
         <!-- Scanner Viewport Area -->
-        <div class="scanner-overlay rounded-2xl p-2 relative min-h-[300px] flex items-center justify-center">
+        <div class="scanner-overlay rounded-2xl p-2 relative min-h-[320px] flex flex-col items-center justify-center overflow-hidden">
 
           <!-- Laser Animation Line -->
           <div id="laser-anim" class="laser-line hidden"></div>
 
+          <!-- Empty state placeholder (visible before camera starts) -->
+          <div id="scanner-placeholder" class="text-center py-10 px-4">
+            <div class="w-16 h-16 rounded-2xl bg-[#1F4D2C]/40 border border-[#6FA96E]/30 flex items-center justify-center mx-auto mb-3 text-2xl text-[#6FA96E] shadow-inner">
+              <i class="bi bi-camera"></i>
+            </div>
+            <p class="text-sm font-semibold text-emerald-100 mb-1">Kamera Belum Aktif</p>
+            <p class="text-xs text-slate-400 max-w-xs mx-auto mb-4">Klik tombol "Aktifkan Kamera" di atas atau gunakan opsi "Scan Gambar".</p>
+            <button onclick="startCameraScanner()" class="btn-green text-white px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-lg cursor-pointer">
+              <i class="bi bi-play-circle-fill"></i> Aktifkan Kamera Sekarang
+            </button>
+          </div>
+
           <!-- Html5Qrcode Reader Container -->
-          <div id="qr-reader" class="w-full max-w-md mx-auto overflow-hidden rounded-xl border border-[#3A7D44]/40"></div>
+          <div id="qr-reader" class="w-full max-w-md mx-auto overflow-hidden rounded-xl border border-[#3A7D44]/40 hidden"></div>
 
         </div>
 
