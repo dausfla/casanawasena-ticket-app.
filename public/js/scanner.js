@@ -6,6 +6,7 @@
 
 let html5QrCode = null;
 let isScanning = false;
+let isStartingScanner = false;
 let isPaused = false;
 let currentCameraId = null;
 let availableCameras = [];
@@ -68,7 +69,7 @@ async function discoverCameras() {
     renderCameraSelectOptions();
     return availableCameras;
   } catch (e) {
-    console.warn('Unable to query camera list:', e);
+    console.warn('Camera device listing note:', e);
     return [];
   }
 }
@@ -79,7 +80,7 @@ function renderCameraSelectOptions() {
   const containerEl = document.getElementById('camera-select-container');
   if (!selectEl || !containerEl) return;
 
-  if (availableCameras.length > 1) {
+  if (availableCameras.length > 0) {
     selectEl.innerHTML = '';
     availableCameras.forEach((cam, idx) => {
       const opt = document.createElement('option');
@@ -112,9 +113,33 @@ async function onCameraSelectChange() {
   }
 }
 
-// Start Camera Scanning
+// Helper to destroy and clean the Html5Qrcode instance
+async function cleanupScannerInstance() {
+  if (html5QrCode) {
+    try {
+      if (html5QrCode.isScanning) {
+        await html5QrCode.stop();
+      }
+    } catch (e) {
+      console.warn('Error stopping scanner during cleanup:', e);
+    }
+    try {
+      await html5QrCode.clear();
+    } catch (e) {
+      console.warn('Error clearing scanner during cleanup:', e);
+    }
+    html5QrCode = null;
+  }
+  const readerElement = document.getElementById('qr-reader');
+  if (readerElement) {
+    readerElement.innerHTML = '';
+  }
+}
+
+// Start Camera Scanning with single-instance safety
 async function startCameraScanner() {
-  if (isScanning) return;
+  if (isScanning || isStartingScanner) return;
+  isStartingScanner = true;
 
   const readerElement = document.getElementById('qr-reader');
   const placeholderEl = document.getElementById('scanner-placeholder');
@@ -124,6 +149,7 @@ async function startCameraScanner() {
 
   if (!readerElement) {
     console.error('Reader element #qr-reader not found');
+    isStartingScanner = false;
     return;
   }
 
@@ -137,58 +163,46 @@ async function startCameraScanner() {
   if (!isHtml5QrcodeLoaded()) {
     showScanStatus('Library pemindai QR belum siap. Periksa koneksi internet Anda.', 'error');
     resetStartButton();
+    isStartingScanner = false;
     return;
   }
 
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     showScanStatus('Akses kamera tidak didukung di peramban ini atau membutuhkan koneksi aman (HTTPS).', 'error');
     resetStartButton();
+    isStartingScanner = false;
     return;
   }
 
   try {
-    // Cleanup previous instance if any
-    if (html5QrCode) {
-      try {
-        if (html5QrCode.isScanning) {
-          await html5QrCode.stop();
-        }
-        await html5QrCode.clear();
-      } catch (cleanErr) {
-        console.warn('Instance cleanup warning:', cleanErr);
-      }
-      html5QrCode = null;
+    // 1. Cleanup any previous instance cleanly
+    await cleanupScannerInstance();
+
+    // 2. Discover cameras if not yet known
+    let cameras = availableCameras;
+    if (cameras.length === 0) {
+      cameras = await discoverCameras();
     }
 
-    // Safe formats config to avoid undeclared variable ReferenceError
-    const formats = (typeof Html5QrcodeSupportedFormats !== 'undefined')
-      ? [Html5QrcodeSupportedFormats.QR_CODE]
-      : undefined;
-
-    html5QrCode = new Html5Qrcode('qr-reader', {
-      formatsToSupport: formats,
-      verbose: false
-    });
-
-    // Query cameras if not discovered yet
-    if (availableCameras.length === 0) {
-      await discoverCameras();
-    }
-
-    // Choose best camera ID or facingMode
-    let cameraToUse = null;
+    // Determine target camera configuration
+    let targetCameraConfig = null;
     const selectEl = document.getElementById('camera-select');
     if (selectEl && selectEl.value) {
-      cameraToUse = selectEl.value;
-    } else if (availableCameras.length > 0) {
-      // Find back camera if on mobile
-      const backCam = availableCameras.find(c => {
+      targetCameraConfig = selectEl.value;
+      currentCameraId = selectEl.value;
+    } else if (cameras && cameras.length > 0) {
+      // Find back/environment camera if available
+      const backCam = cameras.find(c => {
         const l = (c.label || '').toLowerCase();
         return l.includes('back') || l.includes('rear') || l.includes('belakang') || l.includes('environment');
       });
-      cameraToUse = backCam ? backCam.id : availableCameras[0].id;
-      currentCameraId = cameraToUse;
-      if (selectEl) selectEl.value = cameraToUse;
+      const chosen = backCam || cameras[0];
+      targetCameraConfig = chosen.id;
+      currentCameraId = chosen.id;
+      if (selectEl) selectEl.value = chosen.id;
+    } else {
+      // Default constraint
+      targetCameraConfig = { facingMode: 'environment' };
     }
 
     const qrCodeSuccessCallback = (decodedText) => {
@@ -202,73 +216,65 @@ async function startCameraScanner() {
     };
 
     const scanConfig = {
-      fps: 20,
+      fps: 15,
       qrbox: (viewfinderWidth, viewfinderHeight) => {
         const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-        const size = Math.max(180, Math.floor(minEdge * 0.72));
+        const size = Math.max(160, Math.floor(minEdge * 0.72));
         return { width: size, height: size };
       },
       aspectRatio: 1.0,
-      disableFlip: false,
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true
-      }
+      disableFlip: false
     };
 
-    // Attempt sequential start strategies
-    let started = false;
+    // Helper to attempt start with a fresh instance
+    async function attemptStart(cameraParam) {
+      await cleanupScannerInstance();
+      const instance = new Html5Qrcode('qr-reader', {
+        verbose: false
+      });
+      await instance.start(cameraParam, scanConfig, qrCodeSuccessCallback, qrCodeErrorCallback);
+      return instance;
+    }
+
+    let activeInstance = null;
     let lastError = null;
 
-    // Strategy 1: Chosen camera ID from getCameras
-    if (cameraToUse) {
-      try {
-        await html5QrCode.start(cameraToUse, scanConfig, qrCodeSuccessCallback, qrCodeErrorCallback);
-        started = true;
-      } catch (err1) {
-        console.warn('Strategy 1 (device ID) failed, trying facingMode:', err1);
-        lastError = err1;
+    // Try primary chosen configuration
+    try {
+      activeInstance = await attemptStart(targetCameraConfig);
+    } catch (err1) {
+      console.warn('Primary camera config failed:', targetCameraConfig, err1);
+      lastError = err1;
+
+      // Fallback 1: Try environment facingMode
+      if (targetCameraConfig !== 'environment' && typeof targetCameraConfig === 'string') {
+        try {
+          activeInstance = await attemptStart({ facingMode: 'environment' });
+        } catch (err2) {
+          console.warn('Fallback { facingMode: environment } failed:', err2);
+          lastError = err2;
+        }
+      }
+
+      // Fallback 2: Try user/front facingMode
+      if (!activeInstance) {
+        try {
+          activeInstance = await attemptStart({ facingMode: 'user' });
+        } catch (err3) {
+          console.warn('Fallback { facingMode: user } failed:', err3);
+          lastError = err3;
+        }
       }
     }
 
-    // Strategy 2: Environment / Back Camera
-    if (!started) {
-      try {
-        await html5QrCode.start({ facingMode: 'environment' }, scanConfig, qrCodeSuccessCallback, qrCodeErrorCallback);
-        started = true;
-      } catch (err2) {
-        console.warn('Strategy 2 (environment facingMode) failed, trying user camera:', err2);
-        lastError = err2;
-      }
+    if (!activeInstance) {
+      throw lastError || new Error('Tidak dapat membuka kamera pada perangkat ini.');
     }
 
-    // Strategy 3: User / Front / Default Camera
-    if (!started) {
-      try {
-        await html5QrCode.start({ facingMode: 'user' }, scanConfig, qrCodeSuccessCallback, qrCodeErrorCallback);
-        started = true;
-      } catch (err3) {
-        console.warn('Strategy 3 (user facingMode) failed, trying any camera:', err3);
-        lastError = err3;
-      }
-    }
-
-    // Strategy 4: Fallback to first available camera device if any
-    if (!started && availableCameras.length > 0) {
-      try {
-        await html5QrCode.start(availableCameras[0].id, scanConfig, qrCodeSuccessCallback, qrCodeErrorCallback);
-        started = true;
-      } catch (err4) {
-        lastError = err4;
-      }
-    }
-
-    if (!started) {
-      throw lastError || new Error('Tidak dapat memulai kamera dengan konfigurasi yang tersedia.');
-    }
-
-    // Camera started successfully
+    html5QrCode = activeInstance;
     isScanning = true;
     isPaused = false;
+    isStartingScanner = false;
 
     if (placeholderEl) placeholderEl.classList.add('hidden');
     if (readerElement) readerElement.classList.remove('hidden');
@@ -278,9 +284,17 @@ async function startCameraScanner() {
 
     checkTorchSupport();
     showScanStatus('Kamera aktif. Arahkan QR Code peserta ke dalam kotak.', 'info');
+
+    // Update camera dropdown labels after permission grant
+    setTimeout(() => {
+      discoverCameras();
+    }, 500);
+
   } catch (err) {
     console.error('Camera access error:', err);
     isScanning = false;
+    isStartingScanner = false;
+    await cleanupScannerInstance();
     resetStartButton();
 
     const rawMsg = (err && err.message) ? err.message : String(err || '');
@@ -289,9 +303,9 @@ async function startCameraScanner() {
 
     let userMsg = 'Gagal mengakses kamera.';
     if (name === 'NotAllowedError' || lower.includes('permission') || lower.includes('notallowed')) {
-      userMsg = 'Izin kamera ditolak. Berikan izin kamera di pengaturan browser/ikon gembok di URL bar, lalu coba lagi.';
+      userMsg = 'Izin kamera ditolak. Berikan izin kamera di browser/ikon gembok di URL bar, lalu coba lagi.';
     } else if (name === 'NotFoundError' || lower.includes('notfound') || lower.includes('device not found')) {
-      userMsg = 'Kamera tidak ditemukan pada perangkat ini. Anda dapat menggunakan opsi "Scan Gambar" atau input manual.';
+      userMsg = 'Kamera tidak ditemukan. Anda dapat menggunakan opsi "Scan Gambar" atau input manual.';
     } else if (name === 'NotReadableError' || lower.includes('notreadable') || lower.includes('could not start')) {
       userMsg = 'Kamera sedang digunakan aplikasi lain. Tutup aplikasi kamera lain lalu coba lagi.';
     } else if (lower.includes('overconstrained')) {
@@ -319,16 +333,8 @@ function resetStartButton() {
 
 // Stop Camera Scanning
 async function stopCameraScanner() {
-  if (html5QrCode) {
-    try {
-      if (isScanning) {
-        await html5QrCode.stop();
-      }
-      await html5QrCode.clear();
-    } catch (e) {
-      console.warn('Stop scanner warning:', e);
-    }
-  }
+  isStartingScanner = false;
+  await cleanupScannerInstance();
 
   isScanning = false;
   isPaused = false;
@@ -395,18 +401,14 @@ async function handleQrFileUpload(event) {
   showScanStatus('Memproses berkas gambar QR...', 'info');
 
   try {
-    if (!html5QrCode) {
-      const formats = (typeof Html5QrcodeSupportedFormats !== 'undefined')
-        ? [Html5QrcodeSupportedFormats.QR_CODE]
-        : undefined;
-
-      html5QrCode = new Html5Qrcode('qr-reader', {
-        formatsToSupport: formats,
+    let fileScanner = html5QrCode;
+    if (!fileScanner) {
+      fileScanner = new Html5Qrcode('qr-reader', {
         verbose: false
       });
     }
 
-    const decodedText = await html5QrCode.scanFile(file, true);
+    const decodedText = await fileScanner.scanFile(file, true);
     if (decodedText) {
       showScanStatus('QR Code berhasil dibaca dari gambar!', 'info');
       handleScannedCode(decodedText);
@@ -646,4 +648,3 @@ window.onCameraSelectChange = onCameraSelectChange;
 document.addEventListener('DOMContentLoaded', () => {
   discoverCameras();
 });
-
