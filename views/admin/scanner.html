@@ -3,58 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Camera QR Scanner - CASANAWASENA</title>
-  
+  <title>Live Camera QR Scanner - SMART STUDENT VILLA</title>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
   <!-- Bootstrap Icons CDN -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  
+
   <!-- html5-qrcode CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="/css/custom.css">
+  <style>
+    :root {
+      --ssv-green-deep: #1F4D2C;
+      --ssv-green: #3A7D44;
+      --ssv-green-light: #6FA96E;
+      --ssv-cream: #F7F5EC;
+      --ssv-cream-2: #FBFAF4;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .font-display {
+      font-family: 'Fredoka', 'Poppins', sans-serif;
+    }
+
+    .green-text {
+      background: linear-gradient(90deg, #2F6B3A, #6FA96E);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .btn-green {
+      background: linear-gradient(180deg, #4A8C4F, #2F6B3A);
+    }
+
+    .btn-green:hover {
+      background: linear-gradient(180deg, #558F58, #356E3B);
+    }
+
+    .glass-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(58, 125, 68, 0.15);
+      border-radius: 1.75rem;
+    }
+
+    .glass-card-light {
+      background: #FFFFFF;
+    }
+
+    .scanner-overlay {
+      background: #0F1E13;
+    }
+
+    .laser-line {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #6FA96E, transparent);
+      top: 15%;
+      animation: laser-scan 2.2s ease-in-out infinite;
+      z-index: 10;
+      box-shadow: 0 0 8px 1px rgba(111, 169, 110, 0.8);
+    }
+
+    @keyframes laser-scan {
+      0% { top: 15%; }
+      50% { top: 85%; }
+      100% { top: 15%; }
+    }
+
+    ::selection {
+      background: #6FA96E;
+      color: #ffffff;
+    }
+  </style>
 </head>
-<body class="bg-[#0F172A] text-slate-100 min-h-screen flex flex-col selection:bg-[#C8A45D] selection:text-slate-900">
+<body class="bg-[#F7F5EC] text-slate-800 min-h-screen flex flex-col">
 
   <!-- ADMIN NAVBAR -->
-  <header class="border-b border-[#C8A45D]/20 bg-[#0F172A]/90 backdrop-blur-md sticky top-0 z-50">
+  <header class="border-b border-[#3A7D44]/15 bg-[#FBFAF4]/95 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
-      
+
       <!-- Brand Logo -->
       <a href="/views/admin/dashboard.html" class="flex items-center gap-2.5 sm:gap-3 shrink-0">
-        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#C8A45D] to-[#9A7731] p-0.5 shadow-lg shadow-[#C8A45D]/20">
-          <div class="w-full h-full bg-[#0F172A] rounded-[10px] flex items-center justify-center">
-            <i class="bi bi-qr-code-scan text-[#C8A45D] text-base sm:text-lg"></i>
-          </div>
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 border-[#2F6B3A] bg-white flex items-center justify-center shadow-sm">
+          <i class="bi bi-qr-code-scan text-[#2F6B3A] text-base sm:text-lg"></i>
         </div>
         <div>
-          <span class="text-base sm:text-lg font-extrabold font-['Poppins'] gold-text block">CASANAWASENA</span>
-          <span class="block text-[9px] sm:text-[10px] font-medium text-slate-400 tracking-widest uppercase">LIVE SCANNER VERIFIKASI</span>
+          <span class="text-base sm:text-lg font-extrabold font-display text-[#1F4D2C] block">SMART STUDENT VILLA</span>
+          <span class="block text-[9px] sm:text-[10px] font-semibold text-[#4A8C4F] tracking-widest uppercase">Live Scanner Verifikasi</span>
         </div>
       </a>
 
       <!-- Admin Nav Links -->
       <nav class="hidden md:flex items-center gap-2">
-        <a href="/views/admin/dashboard.html" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-[#C8A45D] hover:bg-slate-800/60 transition flex items-center gap-2">
+        <a href="/views/admin/dashboard.html" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-[#2F6B3A] hover:bg-[#3A7D44]/5 transition flex items-center gap-2">
           <i class="bi bi-grid-fill"></i> Dashboard
         </a>
-        <a href="/views/admin/scanner.html" class="px-4 py-2 rounded-lg text-sm font-semibold bg-[#C8A45D]/15 text-[#C8A45D] border border-[#C8A45D]/30 flex items-center gap-2">
+        <a href="/views/admin/scanner.html" class="px-4 py-2 rounded-lg text-sm font-semibold bg-[#3A7D44]/10 text-[#2F6B3A] border border-[#3A7D44]/30 flex items-center gap-2">
           <i class="bi bi-qr-code-scan"></i> QR Scanner
         </a>
-        <a href="/views/admin/rekap.html" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-[#C8A45D] hover:bg-slate-800/60 transition flex items-center gap-2">
+        <a href="/views/admin/rekap.html" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-[#2F6B3A] hover:bg-[#3A7D44]/5 transition flex items-center gap-2">
           <i class="bi bi-table"></i> Rekap Data
         </a>
       </nav>
 
       <!-- Logout Button -->
       <div class="hidden md:flex items-center">
-        <button onclick="handleLogout()" class="text-xs sm:text-sm font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 px-3.5 py-2 rounded-lg border border-rose-500/30 transition flex items-center gap-1.5 cursor-pointer">
+        <button onclick="handleLogout()" class="text-xs sm:text-sm font-semibold text-rose-500 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 px-3.5 py-2 rounded-lg border border-rose-200 transition flex items-center gap-1.5 cursor-pointer">
           <i class="bi bi-box-arrow-right"></i>
           <span>Keluar</span>
         </button>
@@ -62,7 +127,7 @@
 
       <!-- Mobile Hamburger Button -->
       <div class="md:hidden flex items-center gap-2">
-        <button onclick="toggleAdminMenu()" id="admin-menu-btn" class="p-2 text-slate-300 hover:text-[#C8A45D] focus:outline-none text-2xl rounded-lg border border-slate-700 bg-slate-900/60" aria-label="Menu">
+        <button onclick="toggleAdminMenu()" id="admin-menu-btn" class="p-2 text-slate-600 hover:text-[#2F6B3A] focus:outline-none text-2xl rounded-lg border border-slate-300 bg-white" aria-label="Menu">
           <i class="bi bi-list" id="admin-menu-icon"></i>
         </button>
       </div>
@@ -70,17 +135,17 @@
     </div>
 
     <!-- Mobile Dropdown Menu -->
-    <div id="admin-menu" class="hidden md:hidden border-t border-slate-800 bg-[#0F172A] px-4 py-3 space-y-2">
-      <a href="/views/admin/dashboard.html" class="block text-sm font-semibold text-slate-200 hover:text-[#C8A45D] p-2.5 rounded-lg hover:bg-slate-800/60 transition flex items-center gap-2">
+    <div id="admin-menu" class="hidden md:hidden border-t border-slate-200 bg-[#FBFAF4] px-4 py-3 space-y-2">
+      <a href="/views/admin/dashboard.html" class="block text-sm font-semibold text-slate-700 hover:text-[#2F6B3A] p-2.5 rounded-lg hover:bg-[#3A7D44]/5 transition flex items-center gap-2">
         <i class="bi bi-grid-fill"></i> Dashboard
       </a>
-      <a href="/views/admin/scanner.html" class="block text-sm font-semibold text-[#C8A45D] bg-[#C8A45D]/10 border border-[#C8A45D]/30 p-2.5 rounded-lg flex items-center gap-2">
+      <a href="/views/admin/scanner.html" class="block text-sm font-semibold text-[#2F6B3A] bg-[#3A7D44]/10 border border-[#3A7D44]/30 p-2.5 rounded-lg flex items-center gap-2">
         <i class="bi bi-qr-code-scan"></i> QR Scanner
       </a>
-      <a href="/views/admin/rekap.html" class="block text-sm font-semibold text-slate-200 hover:text-[#C8A45D] p-2.5 rounded-lg hover:bg-slate-800/60 transition flex items-center gap-2">
+      <a href="/views/admin/rekap.html" class="block text-sm font-semibold text-slate-700 hover:text-[#2F6B3A] p-2.5 rounded-lg hover:bg-[#3A7D44]/5 transition flex items-center gap-2">
         <i class="bi bi-table"></i> Rekap Data
       </a>
-      <button onclick="handleLogout()" class="w-full text-left text-sm font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/30 p-2.5 rounded-lg transition flex items-center gap-2">
+      <button onclick="handleLogout()" class="w-full text-left text-sm font-semibold text-rose-500 bg-rose-50 border border-rose-200 p-2.5 rounded-lg transition flex items-center gap-2">
         <i class="bi bi-box-arrow-right"></i>
         <span>Keluar / Logout</span>
       </button>
@@ -88,101 +153,109 @@
   </header>
 
   <!-- MOBILE NAVIGATION BAR -->
-  <div class="md:hidden bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex justify-around text-xs font-semibold">
-    <a href="/views/admin/dashboard.html" class="text-slate-400 hover:text-[#C8A45D] flex items-center gap-1">
+  <div class="md:hidden bg-white border-b border-slate-200 px-4 py-2.5 flex justify-around text-xs font-semibold">
+    <a href="/views/admin/dashboard.html" class="text-slate-500 hover:text-[#2F6B3A] flex items-center gap-1">
       <i class="bi bi-grid-fill"></i> Dashboard
     </a>
-    <a href="/views/admin/scanner.html" class="text-[#C8A45D] flex items-center gap-1">
+    <a href="/views/admin/scanner.html" class="text-[#2F6B3A] flex items-center gap-1">
       <i class="bi bi-qr-code-scan"></i> QR Scanner
     </a>
-    <a href="/views/admin/rekap.html" class="text-slate-400 hover:text-[#C8A45D] flex items-center gap-1">
+    <a href="/views/admin/rekap.html" class="text-slate-500 hover:text-[#2F6B3A] flex items-center gap-1">
       <i class="bi bi-table"></i> Rekap Data
     </a>
   </div>
 
   <!-- MAIN CONTAINER -->
   <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
-    
+
     <div class="text-center max-w-xl mx-auto">
-      <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C8A45D]/10 border border-[#C8A45D]/30 text-[#C8A45D] text-xs font-semibold uppercase mb-2">
+      <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3A7D44]/10 border border-[#3A7D44]/30 text-[#2F6B3A] text-xs font-semibold uppercase mb-2">
         <i class="bi bi-camera-fill"></i> Camera QR Check-in System
       </span>
-      <h1 class="text-2xl sm:text-3xl font-extrabold font-['Poppins']">
+      <h1 class="text-2xl sm:text-3xl font-extrabold font-display text-[#1F4D2C]">
         Pemindai QR E-Tiket Realtime
       </h1>
-      <p class="text-slate-400 text-xs sm:text-sm mt-1">
+      <p class="text-slate-500 text-xs sm:text-sm mt-1">
         Arahkan kamera ke QR Code peserta atau gunakan input manual di bawah.
+      </p>
+    </div>
+
+    <!-- Camera troubleshooting notice: only needs to be read if the camera fails -->
+    <div class="max-w-xl mx-auto text-center">
+      <p class="text-[11px] text-slate-400">
+        <i class="bi bi-info-circle"></i>
+        Kamera memerlukan koneksi HTTPS dan izin akses kamera dari browser. Jika gagal, periksa pesan status di bawah kotak kamera.
       </p>
     </div>
 
     <!-- MAIN SCANNER & MANUAL INPUT GRID -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-      
+
       <!-- LEFT COLUMN: LIVE CAMERA VIEWPORT (8 COLS) -->
-      <div class="lg:col-span-7 glass-card p-6 shadow-2xl relative">
-        
-        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
-          <h2 class="text-base font-bold font-['Poppins'] text-slate-100 flex items-center gap-2">
-            <i class="bi bi-camera-video-fill text-[#C8A45D]"></i> Kamera Pemindai
+      <div class="lg:col-span-7 glass-card p-6 shadow-xl relative">
+
+        <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
+          <h2 class="text-base font-bold font-display text-[#1F4D2C] flex items-center gap-2">
+            <i class="bi bi-camera-video-fill text-[#2F6B3A]"></i> Kamera Pemindai
           </h2>
 
           <div class="flex gap-2">
-            <button id="start-cam-btn" onclick="startCameraScanner()" class="btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer">
+            <button id="start-cam-btn" onclick="startCameraScanner()" class="btn-green text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer">
               <i class="bi bi-play-circle-fill"></i> Aktifkan Kamera
             </button>
-            <button id="stop-cam-btn" onclick="stopCameraScanner()" class="hidden bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
+            <button id="stop-cam-btn" onclick="stopCameraScanner()" class="hidden bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
               <i class="bi bi-stop-circle-fill"></i> Matikan Kamera
             </button>
           </div>
         </div>
 
         <!-- Scanner Viewport Area -->
-        <div class="scanner-overlay bg-slate-950 rounded-2xl p-2 relative min-h-[300px] flex items-center justify-center">
-          
+        <div class="scanner-overlay rounded-2xl p-2 relative min-h-[300px] flex items-center justify-center">
+
           <!-- Laser Animation Line -->
           <div id="laser-anim" class="laser-line hidden"></div>
 
           <!-- Html5Qrcode Reader Container -->
-          <div id="qr-reader" class="w-full max-w-md mx-auto overflow-hidden rounded-xl border border-slate-800"></div>
+          <div id="qr-reader" class="w-full max-w-md mx-auto overflow-hidden rounded-xl border border-[#3A7D44]/40"></div>
 
         </div>
 
         <!-- Status Bar -->
-        <div class="mt-4 p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs text-slate-400">
+        <div class="mt-4 p-3 rounded-xl bg-[#F7F5EC] border border-slate-200 flex items-center justify-between text-xs text-slate-500 gap-3">
           <span class="flex items-center gap-2">
-            <i class="bi bi-info-circle text-[#C8A45D]"></i>
+            <i class="bi bi-info-circle text-[#2F6B3A]"></i>
             <span id="scan-status-text">Klik "Aktifkan Kamera" untuk memulai pemindaian.</span>
           </span>
-          <span class="font-mono text-[10px] text-slate-500 uppercase">CSN SCAN ENGINE v2.0</span>
+          <span class="font-mono text-[10px] text-slate-400 uppercase shrink-0">SSV SCAN ENGINE v2.1</span>
         </div>
 
       </div>
 
       <!-- RIGHT COLUMN: MANUAL INPUT & QUICK CHECKIN LOG (5 COLS) -->
       <div class="lg:col-span-5 space-y-6">
-        
+
         <!-- Manual Input Card -->
-        <div class="glass-card p-6 border border-[#C8A45D]/30 shadow-xl">
-          <h2 class="text-base font-bold font-['Poppins'] text-slate-100 flex items-center gap-2 border-b border-slate-800 pb-3 mb-4">
-            <i class="bi bi-keyboard-fill text-[#C8A45D]"></i> Input Manual Ticket ID
+        <div class="glass-card p-6 shadow-xl">
+          <h2 class="text-base font-bold font-display text-[#1F4D2C] flex items-center gap-2 border-b border-slate-200 pb-3 mb-4">
+            <i class="bi bi-keyboard-fill text-[#2F6B3A]"></i> Input Manual Ticket ID
           </h2>
 
           <form onsubmit="handleManualCheckin(event)" class="space-y-4">
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                 Ticket ID Peserta
               </label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-mono">
                   #
                 </span>
-                <input type="text" id="manual-ticket-id" required placeholder="CSN-2026-8812" 
-                       class="w-full bg-slate-900 border border-slate-700 focus:border-[#C8A45D] rounded-xl pl-8 pr-4 py-3 font-mono font-bold uppercase tracking-wider text-slate-100 text-sm outline-none transition">
+                <input type="text" id="manual-ticket-id" required placeholder="CSN-2026-8812"
+                       class="w-full bg-white border border-slate-300 focus:border-[#3A7D44] rounded-xl pl-8 pr-4 py-3 font-mono font-bold uppercase tracking-wider text-slate-800 text-sm outline-none transition">
               </div>
               <p class="text-[11px] text-slate-400 mt-1">Format: CSN-2026-XXXX</p>
             </div>
 
-            <button type="submit" id="manual-submit-btn" class="w-full btn-gold py-3.5 rounded-xl font-bold text-slate-950 text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer">
+            <button type="submit" id="manual-submit-btn" class="w-full btn-green py-3.5 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer">
               <i class="bi bi-check2-circle text-lg"></i>
               <span>VERIFIKASI CHECK-IN</span>
             </button>
@@ -190,13 +263,13 @@
         </div>
 
         <!-- Recent Scanner Logs Card -->
-        <div class="glass-card p-6">
-          <h3 class="text-sm font-bold font-['Poppins'] text-slate-100 flex items-center gap-2 mb-3">
-            <i class="bi bi-clock-history text-[#C8A45D]"></i> Riwayat Scan Terakhir
+        <div class="glass-card p-6 shadow-xl">
+          <h3 class="text-sm font-bold font-display text-[#1F4D2C] flex items-center gap-2 mb-3">
+            <i class="bi bi-clock-history text-[#2F6B3A]"></i> Riwayat Scan Terakhir
           </h3>
 
           <div id="recent-scan-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-            <p class="text-xs text-slate-500 text-center py-4">Belum ada riwayat scan pada sesi ini.</p>
+            <p class="text-xs text-slate-400 text-center py-4">Belum ada riwayat scan pada sesi ini.</p>
           </div>
         </div>
 
@@ -207,16 +280,16 @@
   </main>
 
   <!-- SCAN RESULT MODAL -->
-  <div id="scan-result-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden items-center justify-center">
+  <div id="scan-result-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 hidden items-center justify-center">
     <div id="modal-content-box" class="glass-card-light p-6 rounded-2xl max-w-md w-full mx-4 shadow-2xl transition-all">
       <!-- Injected dynamically by scanner.js -->
     </div>
   </div>
 
   <!-- FOOTER -->
-  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500 bg-[#0F172A] mt-auto">
+  <footer class="border-t border-slate-200 py-6 text-center text-xs text-slate-500 bg-[#FBFAF4] mt-auto">
     <div class="max-w-7xl mx-auto px-4">
-      <p class="font-semibold text-slate-400">© 2026 CASANAWASENA Verification System.</p>
+      <p class="font-semibold text-slate-500">© 2026 Smart Student Villa Verification System.</p>
     </div>
   </footer>
 
@@ -264,15 +337,15 @@
           const items = data.stats.recent_checkins;
 
           if (items.length === 0) {
-            listEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Belum ada peserta yang check-in.</p>`;
+            listEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada peserta yang check-in.</p>`;
             return;
           }
 
           listEl.innerHTML = items.map(item => `
-            <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+            <div class="p-3 bg-[#F7F5EC] border border-slate-200 rounded-xl flex items-center justify-between text-xs">
               <div>
-                <span class="font-bold text-slate-200 block">${item.nama_lengkap}</span>
-                <span class="font-mono text-[10px] text-[#C8A45D] font-semibold">${item.ticket_id}</span>
+                <span class="font-bold text-slate-700 block">${item.nama_lengkap}</span>
+                <span class="font-mono text-[10px] text-[#2F6B3A] font-semibold">${item.ticket_id}</span>
               </div>
               <span class="font-mono text-[10px] text-slate-400">${item.waktu_checkin ? item.waktu_checkin.substring(11, 19) : ''}</span>
             </div>
