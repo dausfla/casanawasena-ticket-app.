@@ -152,15 +152,35 @@ async function startCameraScanner() {
     showScanStatus('Kamera Aktif. Arahkan QR Code ke dalam kotak.', 'info');
   } catch (err) {
     console.error('Camera access error:', err);
-    let msg = err && err.message ? err.message : 'Izin ditolak atau kamera tidak ditemukan.';
-    if (err && err.name === 'NotAllowedError') {
-      msg = 'Izin kamera ditolak. Aktifkan izin kamera untuk situs ini di pengaturan browser.';
-    } else if (err && err.name === 'NotFoundError') {
+
+    // html5-qrcode sometimes rejects with a plain string (e.g.
+    // "NotAllowedError: Permission denied") instead of a proper
+    // DOMException, so err.name / err.message can both be undefined.
+    // Normalize to a raw string we can pattern-match AND show on screen,
+    // since checking the console isn't practical on a phone.
+    const raw = typeof err === 'string'
+      ? err
+      : (err && err.message) ? err.message : (err ? String(err) : 'Tidak diketahui');
+    const lower = raw.toLowerCase();
+    const name = (err && err.name) ? err.name : '';
+
+    let msg = raw;
+    if (name === 'NotAllowedError' || lower.includes('notallowed') || lower.includes('permission denied') || lower.includes('permission dismissed')) {
+      msg = 'Izin kamera ditolak. Aktifkan izin kamera untuk situs ini di pengaturan browser, lalu muat ulang halaman.';
+    } else if (name === 'NotFoundError' || lower.includes('notfound') || lower.includes('requested device not found')) {
       msg = 'Tidak ada kamera yang terdeteksi pada perangkat ini.';
-    } else if (err && err.name === 'NotReadableError') {
-      msg = 'Kamera sedang digunakan oleh aplikasi lain.';
+    } else if (name === 'NotReadableError' || lower.includes('notreadable') || lower.includes('could not start video source')) {
+      msg = 'Kamera sedang dipakai aplikasi lain. Tutup aplikasi kamera/tab lain lalu coba lagi.';
+    } else if (lower.includes('overconstrained')) {
+      msg = 'Kamera tidak mendukung pengaturan yang diminta.';
+    } else if (lower.includes('secure') || lower.includes('https')) {
+      msg = 'Halaman harus diakses lewat HTTPS untuk memakai kamera.';
     }
-    showScanStatus('Gagal mengakses kamera: ' + msg, 'error');
+
+    // Show both the friendly message and the raw detail, so the exact
+    // cause is visible directly on the page (useful for phones where
+    // opening devtools isn't practical).
+    showScanStatus('Gagal mengakses kamera: ' + msg + ' [Detail: ' + raw + ']', 'error');
     isScanning = false;
   }
 }
