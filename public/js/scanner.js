@@ -1,25 +1,24 @@
 /**
- * CASANAWASENA - QR Scanner Helper (Optimized)
+ * CASANAWASENA - QR Scanner Helper (Optimized, fixed)
  *
- * Speed upgrades vs previous version:
+ * Fix vs previous version: `experimentalFeatures` (native BarcodeDetector
+ * opt-in) belongs in the config passed to `.start()`, not in the
+ * `Html5Qrcode` constructor. Having it in the wrong place could keep the
+ * camera from starting correctly on some browsers.
+ *
+ * Speed upgrades kept from before:
  * 1. formatsToSupport limited to QR_CODE only -> decoder doesn't waste time
  *    trying to match barcode/DataMatrix/etc formats on every frame.
  * 2. experimentalFeatures.useBarCodeDetectorIfSupported -> uses the browser's
  *    native BarcodeDetector API (hardware-accelerated) on Chrome/Android
- *    instead of the pure-JS decoder, when available. Big speed win.
- * 3. fps raised 10 -> 20 and disableFlip true (we always use the back
- *    camera, so mirroring correction is unnecessary extra work per frame).
- * 4. videoConstraints capped to a moderate resolution (1280x720 ideal)
- *    instead of default full camera resolution -> smaller frames to decode
- *    = faster per-frame processing, especially on phones.
- * 5. Camera is paused (not fully stopped) right after a successful decode,
- *    so it stops burning CPU on duplicate frames while the result modal is
- *    open, and resumes instantly the moment the admin dismisses it -
- *    instead of waiting out a fixed cooldown timer.
- * 6. Successful check-ins auto-dismiss the modal after a short delay and
- *    resume scanning automatically, so the operator doesn't need to tap
- *    "Selesai" between every participant. Failed scans still require a
- *    manual dismiss since those need the admin's attention.
+ *    instead of the pure-JS decoder, when available.
+ * 3. fps raised 10 -> 20 and disableFlip true (back camera doesn't need
+ *    mirror correction).
+ * 4. videoConstraints capped to a moderate resolution (1280x720 ideal).
+ * 5. Camera is paused (not stopped) after a successful decode and resumes
+ *    instantly when the result modal closes, instead of a fixed cooldown.
+ * 6. Successful check-ins auto-dismiss and resume scanning after a short
+ *    delay; failed scans still require a manual dismiss.
  */
 
 let html5QrCode = null;
@@ -44,16 +43,14 @@ function playSound(type) {
     gain.connect(audioCtx.destination);
 
     if (type === 'success') {
-      // High double beep
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-      osc.frequency.setValueAtTime(1174.66, audioCtx.currentTime + 0.1); // D6
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(1174.66, audioCtx.currentTime + 0.1);
       gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
       osc.start(audioCtx.currentTime);
       osc.stop(audioCtx.currentTime + 0.3);
     } else if (type === 'error') {
-      // Low saw/buzz sound
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(220, audioCtx.currentTime);
       osc.frequency.setValueAtTime(160, audioCtx.currentTime + 0.15);
@@ -74,17 +71,25 @@ async function startCameraScanner() {
 
   if (isScanning) return;
 
+  // Basic environment checks so failures are visible instead of silent.
+  if (typeof Html5Qrcode === 'undefined') {
+    showScanStatus('Gagal memuat library scanner (html5-qrcode). Periksa koneksi internet / CDN.', 'error');
+    console.error('Html5Qrcode is undefined - the CDN script may have failed to load.');
+    return;
+  }
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showScanStatus('Browser ini tidak mendukung akses kamera, atau halaman tidak dibuka lewat HTTPS.', 'error');
+    console.error('navigator.mediaDevices.getUserMedia is unavailable - requires a secure context (HTTPS or localhost).');
+    return;
+  }
+
+  showScanStatus('Meminta izin kamera...', 'info');
+
   try {
     html5QrCode = new Html5Qrcode('qr-reader', {
-      // Restrict decoding to QR only - skips the extra format-matching
-      // passes the library runs for barcodes/PDF417/etc on every frame.
+      // Restrict decoding to QR only - skips extra format-matching passes.
       formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-      // Use the browser's native BarcodeDetector when it's available
-      // (modern Chrome/Android). Falls back to the JS decoder automatically
-      // where it isn't supported (e.g. Safari/iOS).
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true
-      },
       verbose: false
     });
 
@@ -97,34 +102,47 @@ async function startCameraScanner() {
     const config = {
       fps: 20,
       qrbox: (viewfinderWidth, viewfinderHeight) => {
-        // Scan box sized relative to the viewfinder so the camera doesn't
-        // have to search the full frame - a tighter, well-fitted box
-        // locks onto the code faster.
         const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
         const size = Math.floor(minEdge * 0.7);
         return { width: size, height: size };
       },
       aspectRatio: 1.0,
-      disableFlip: true
+      disableFlip: true,
+      // Correct location for this option: the .start() scan config, not
+      // the constructor. Uses native BarcodeDetector when supported
+      // (Chrome/Android) for faster decoding, falls back automatically.
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true
+      }
     };
 
-    // Moderate resolution request: smaller frames decode faster than
-    // full camera resolution while still being plenty sharp for a QR code
-    // held at a normal check-in distance.
     const cameraConfig = {
       facingMode: 'environment',
       width: { ideal: 1280 },
       height: { ideal: 720 }
     };
 
-    await html5QrCode.start(
-      cameraConfig,
-      config,
-      qrCodeSuccessCallback,
-      (errorMessage) => {
-        // Ignore per-frame "no QR found" noise
-      }
-    );
+    try {
+      await html5QrCode.start(
+        cameraConfig,
+        config,
+        qrCodeSuccessCallback,
+        (errorMessage) => {
+          // Ignore per-frame "no QR found" noise
+        }
+      );
+    } catch (startErr) {
+      // Some devices/browsers (mostly desktops without a labeled "back"
+      // camera) reject a facingMode constraint outright. Retry once with
+      // whatever default camera is available.
+      console.warn('start() with facingMode failed, retrying with default camera:', startErr);
+      await html5QrCode.start(
+        { facingMode: 'user' },
+        config,
+        qrCodeSuccessCallback,
+        (errorMessage) => {}
+      );
+    }
 
     isScanning = true;
     isPaused = false;
@@ -134,7 +152,16 @@ async function startCameraScanner() {
     showScanStatus('Kamera Aktif. Arahkan QR Code ke dalam kotak.', 'info');
   } catch (err) {
     console.error('Camera access error:', err);
-    showScanStatus('Gagal mengakses kamera: ' + (err.message || 'Izin ditolak atau kamera tidak ditemukan'), 'error');
+    let msg = err && err.message ? err.message : 'Izin ditolak atau kamera tidak ditemukan.';
+    if (err && err.name === 'NotAllowedError') {
+      msg = 'Izin kamera ditolak. Aktifkan izin kamera untuk situs ini di pengaturan browser.';
+    } else if (err && err.name === 'NotFoundError') {
+      msg = 'Tidak ada kamera yang terdeteksi pada perangkat ini.';
+    } else if (err && err.name === 'NotReadableError') {
+      msg = 'Kamera sedang digunakan oleh aplikasi lain.';
+    }
+    showScanStatus('Gagal mengakses kamera: ' + msg, 'error');
+    isScanning = false;
   }
 }
 
@@ -166,13 +193,10 @@ async function handleScannedCode(decodedText) {
   if (scanLock) return;
   scanLock = true;
 
-  // Pause decoding immediately (keeps the video feed visible but stops
-  // burning CPU on frames while we process this result / show the modal).
   pauseScanner();
 
   console.log('Decoded QR:', decodedText);
 
-  // Payload format expected: "ticket_id|security_token" or "ticket_id"
   let ticketId = decodedText.trim();
   let securityToken = '';
 
@@ -190,7 +214,7 @@ async function handleScannedCode(decodedText) {
 function pauseScanner() {
   if (html5QrCode && isScanning && !isPaused) {
     try {
-      html5QrCode.pause(true); // true = also pause the video stream frame grabbing
+      html5QrCode.pause(true);
       isPaused = true;
     } catch (e) {
       console.error('Pause scanner error:', e);
@@ -233,9 +257,6 @@ async function processCheckIn(ticketId, securityToken) {
         window.loadRecentCheckins();
       }
 
-      // Auto-continue: close the success modal and resume the camera
-      // on its own after a short beat, so the operator doesn't have to
-      // tap through every single participant.
       if (autoContinueTimer) clearTimeout(autoContinueTimer);
       autoContinueTimer = setTimeout(() => {
         closeResultModal();
@@ -243,7 +264,6 @@ async function processCheckIn(ticketId, securityToken) {
     } else {
       playSound('error');
       showResultModal(false, result.message, result.participant || null);
-      // Errors stay open until the admin manually dismisses them.
     }
   } catch (err) {
     playSound('error');
@@ -352,8 +372,6 @@ function closeResultModal() {
     modal.classList.remove('flex');
   }
 
-  // Resume the live camera feed right away instead of waiting out a
-  // fixed cooldown timer - next participant can be scanned immediately.
   resumeScanner();
 }
 
@@ -361,6 +379,7 @@ function showScanStatus(msg, type) {
   const el = document.getElementById('scan-status-text');
   if (el) {
     el.textContent = msg;
+    el.className = type === 'error' ? 'text-rose-500 font-semibold' : '';
   }
 }
 
